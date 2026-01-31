@@ -1,4 +1,4 @@
-
+using EgyptianMuseum.Application.Services.Auth;
 using EgyptianMuseum.Domain.Entities;
 using EgyptianMuseum.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,6 +30,8 @@ namespace EgyptianMuseum.API
             
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
                             .AddEntityFrameworkStores<AppDbContext>();
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
 
             builder.Services.AddCors(options =>
             {
@@ -98,9 +100,13 @@ namespace EgyptianMuseum.API
             app.UseHttpsRedirection();
 
             app.UseCors("MyPolicy");
+            
+            // CRITICAL FIX: Explicit UseRouting() call before authentication middleware
+            // This ensures endpoint routing is resolved before auth policies are evaluated
+            app.UseRouting();
+            
             app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 
