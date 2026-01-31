@@ -9,5 +9,7 @@ namespace EgyptianMuseum.Domain.Entities
 {
     public class ApplicationUser : IdentityUser
     {
+        public string? Name { get; set; }
+        public string PreferredLanguage { get; set; } = "en";
     }
 }
