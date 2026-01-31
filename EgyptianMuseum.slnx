@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="EgyptianMuseum.API/EgyptianMuseum.API.csproj" />
+  <Project Path="EgyptianMuseum.Application/EgyptianMuseum.Application.csproj" />
+  <Project Path="EgyptianMuseum.Domain/EgyptianMuseum.Domain.csproj" />
+  <Project Path="EgyptianMuseum.Infrastructure/EgyptianMuseum.Infrastructure.csproj" />
+</Solution>
