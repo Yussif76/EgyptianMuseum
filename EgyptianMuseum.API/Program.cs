@@ -21,7 +21,6 @@ namespace EgyptianMuseum.API
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
 
 
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -29,9 +28,9 @@ namespace EgyptianMuseum.API
             
             
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
-                            .AddEntityFrameworkStores<AppDbContext>();
+                            .AddEntityFrameworkStores<AppDbContext>()
+                            .AddDefaultTokenProviders();
 
-            builder.Services.AddScoped<IAuthService, AuthService>();
 
             builder.Services.AddCors(options =>
             {
@@ -40,6 +39,13 @@ namespace EgyptianMuseum.API
                           .AllowAnyMethod()
                           .AllowAnyHeader());
             });
+
+            // Validate Jwt configuration section exists
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            if (string.IsNullOrWhiteSpace(jwtSection["SecretKey"]))
+            {
+                throw new InvalidOperationException("JWT configuration is missing or incomplete. Please ensure 'Jwt:SecretKey' is set in configuration.");
+            }
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -51,12 +57,16 @@ namespace EgyptianMuseum.API
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
 
-                    ValidIssuer = builder.Configuration["JWT:Issuer"],
-                    ValidAudience = builder.Configuration["JWT:Audience"],
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"]))
+                        Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecretKey"]))
                 };
             });
+
+
+            builder.Services.AddScoped<IAuthService, AuthService>();
+
 
             #region SwaggerSettings
             builder.Services.AddSwaggerGen(options =>
@@ -65,28 +75,29 @@ namespace EgyptianMuseum.API
                 {
                     Name = "Authorization",
                     Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer",
+                    Scheme = "bearer",
                     BearerFormat = "JWT",
-                    In = ParameterLocation.Header
+                    In = ParameterLocation.Header,
+                    Description = "Enter 'Bearer {token}'"
                 });
 
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
                 {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] { }
+                    }
+                });
+
             });
             #endregion 
-
 
             var app = builder.Build();
 
@@ -99,11 +110,9 @@ namespace EgyptianMuseum.API
 
             app.UseHttpsRedirection();
 
-            app.UseCors("MyPolicy");
-            
-            // CRITICAL FIX: Explicit UseRouting() call before authentication middleware
-            // This ensures endpoint routing is resolved before auth policies are evaluated
             app.UseRouting();
+
+            app.UseCors("MyPolicy");
             
             app.UseAuthentication();
             app.UseAuthorization();

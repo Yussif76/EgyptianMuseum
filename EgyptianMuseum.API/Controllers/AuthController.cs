@@ -1,5 +1,9 @@
 using EgyptianMuseum.Application.DTOs.Auth;
 using EgyptianMuseum.Application.Services.Auth;
+using EgyptianMuseum.Domain.Entities;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EgyptianMuseum.API.Controllers
@@ -9,10 +13,12 @@ namespace EgyptianMuseum.API.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public AuthController(IAuthService authService)
+        public AuthController(IAuthService authService, UserManager<ApplicationUser> userManager)
         {
             _authService = authService;
+            _userManager = userManager;
         }
 
         [HttpPost("register")]
@@ -39,8 +45,37 @@ namespace EgyptianMuseum.API.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { success = false, errors = new[] { ex.Message } });
+                // Invalid credentials should return 401
+                return Unauthorized(new { success = false, errors = new[] { ex.Message } });
             }
+        }
+
+        //[Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("me")]
+        public async Task<IActionResult> Me()
+        {
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized();
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                return Unauthorized();
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                userId = user.Id,
+                email = user.Email,
+                name = user.Name,
+                //roles = roles
+            });
         }
     }
 }
