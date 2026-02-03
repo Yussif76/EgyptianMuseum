@@ -84,15 +84,32 @@ namespace EgyptianMuseum.Application.Services.Auth
 
         private string GenerateJwtToken(ApplicationUser user)
         {
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["JWT:SecretKey"]));
+            // prefer 'JWT' section (matches appsettings), fallback to 'Jwt'
+            var jwtSection = _configuration.GetSection("JWT");
+            if (!jwtSection.Exists()) jwtSection = _configuration.GetSection("Jwt");
+
+            string? secret = jwtSection.GetValue<string>("SecretKey");
+            string? issuer = jwtSection.GetValue<string>("Issuer");
+            string? audience = jwtSection.GetValue<string>("Audience");
+            string? expiryStr = jwtSection.GetValue<string>("ExpiryMinutes");
+
+
+            if (string.IsNullOrWhiteSpace(secret))
+                throw new InvalidOperationException("JWT SecretKey is not configured.");
+
+            if (!double.TryParse(expiryStr, out var expiryMinutes))
+            {
+                expiryMinutes = 60; // default
+            }
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim("sub", user.Id),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty)
             };
 
             if (!string.IsNullOrWhiteSpace(user.Name))
@@ -101,10 +118,10 @@ namespace EgyptianMuseum.Application.Services.Auth
             }
 
             var token = new JwtSecurityToken(
-                issuer: _configuration["JWT:Issuer"],
-                audience: _configuration["JWT:Audience"],
+                issuer: issuer,
+                audience: audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JWT:ExpiryMinutes"])),
+                expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
