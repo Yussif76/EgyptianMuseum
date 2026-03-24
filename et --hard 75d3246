@@ -1,0 +1,18 @@
+[33mc7f0878[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: reset: moving to HEAD~2
+[33m75d3246[m HEAD@{1}: checkout: moving from feature/chat to master
+[33m015d2be[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/chat[m[33m, [m[1;32mfeature/auth[m[33m)[m HEAD@{2}: checkout: moving from feature/auth to feature/chat
+[33m015d2be[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/chat[m[33m, [m[1;32mfeature/auth[m[33m)[m HEAD@{3}: checkout: moving from feature/chat to feature/auth
+[33m015d2be[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/chat[m[33m, [m[1;32mfeature/auth[m[33m)[m HEAD@{4}: checkout: moving from feature/auth to feature/chat
+[33m015d2be[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/chat[m[33m, [m[1;32mfeature/auth[m[33m)[m HEAD@{5}: reset: moving to origin/feature/auth
+[33m015d2be[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/chat[m[33m, [m[1;32mfeature/auth[m[33m)[m HEAD@{6}: checkout: moving from feature/chat to feature/auth
+[33m015d2be[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/chat[m[33m, [m[1;32mfeature/auth[m[33m)[m HEAD@{7}: checkout: moving from feature/auth to feature/chat
+[33m015d2be[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/chat[m[33m, [m[1;32mfeature/auth[m[33m)[m HEAD@{8}: checkout: moving from feature/chat to feature/auth
+[33m015d2be[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/chat[m[33m, [m[1;32mfeature/auth[m[33m)[m HEAD@{9}: reset: moving to feature/auth
+[33m75d3246[m HEAD@{10}: checkout: moving from master to feature/chat
+[33m75d3246[m HEAD@{11}: pull --progress --no-edit --no-stat --recurse-submodules=no origin: Fast-forward
+[33mc7f0878[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{12}: checkout: moving from feature/auth to master
+[33m015d2be[m[33m ([m[1;31morigin/feature/auth[m[33m, [m[1;32mfeature/chat[m[33m, [m[1;32mfeature/auth[m[33m)[m HEAD@{13}: commit: Repair JWT authentication
+[33m5ad7a4f[m HEAD@{14}: commit: Add authentication (register/login) with JWT
+[33mc7f0878[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{15}: checkout: moving from master to feature/auth
+[33mc7f0878[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{16}: commit: Add project files.
+[33mcc42a07[m HEAD@{17}: commit (initial): Add .gitattributes and .gitignore.
