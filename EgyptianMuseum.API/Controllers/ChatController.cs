@@ -44,6 +44,45 @@ namespace EgyptianMuseum.API.Controllers
             }
         }
 
+        [HttpPost("artifact")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> StartArtifactChat(
+            [FromBody] StartArtifactChatRequestDto request,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (request.ArtifactId <= 0)
+                    return BadRequest(new { success = false, message = "Invalid artifact ID" });
+
+                var userId = GetUserId();
+                var result = await _chatService.StartArtifactChatAsync(userId, request, cancellationToken);
+
+                if (result.IsExisting)
+                    return Ok(new { success = true, data = result });
+
+                return CreatedAtAction(nameof(GetConversationMessages), new { conversationId = result.ConversationId }, new { success = true, data = result });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { success = false, message = "User not authenticated" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+
+
         [HttpPost("{conversationId}/messages")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

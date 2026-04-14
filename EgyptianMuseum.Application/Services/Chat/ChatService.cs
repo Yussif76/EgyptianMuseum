@@ -10,15 +10,18 @@ namespace EgyptianMuseum.Application.Services.Chat
         private readonly IChatConversationRepository _conversationRepository;
         private readonly IChatMessageRepository _messageRepository;
         private readonly IAiChatService _aiChatService;
+        private readonly IPieceRepository _pieceRepository;
 
         public ChatService(
             IChatConversationRepository conversationRepository,
             IChatMessageRepository messageRepository,
-            IAiChatService aiChatService)
+            IAiChatService aiChatService,
+            IPieceRepository pieceRepository)
         {
             _conversationRepository = conversationRepository;
             _messageRepository = messageRepository;
             _aiChatService = aiChatService;
+            _pieceRepository = pieceRepository;
         }
 
         public async Task<StartGeneralChatResponseDto> StartGeneralChatAsync(
@@ -28,6 +31,7 @@ namespace EgyptianMuseum.Application.Services.Chat
             var now = DateTime.UtcNow;
             var conversation = new ChatConversation
             {
+
                 UserId = userId,
                 Type = ConversationType.General,
                 ArtifactId = null,
@@ -43,6 +47,59 @@ namespace EgyptianMuseum.Application.Services.Chat
                 ConversationId = conversation.Id,
                 Title = conversation.Title,
                 CreatedAt = conversation.CreatedAt
+            };
+        }
+
+        public async Task<StartArtifactChatResponseDto> StartArtifactChatAsync(
+            string userId,
+            StartArtifactChatRequestDto request,
+            CancellationToken cancellationToken = default)
+        {
+            if (request.ArtifactId <= 0)
+                throw new ArgumentException("Invalid artifact ID");
+
+            // Validate that the piece actually exists
+            var piece = await _pieceRepository.GetByIdAsync(request.ArtifactId, cancellationToken);
+            if (piece == null)
+                throw new KeyNotFoundException($"Artifact with ID {request.ArtifactId} not found");
+
+            // Return existing conversation if one already exists for this user + artifact
+            var existingConversation = await _conversationRepository
+                .GetByUserAndArtifactAsync(userId, request.ArtifactId, cancellationToken);
+
+            if (existingConversation != null)
+            {
+                return new StartArtifactChatResponseDto
+                {
+                    ConversationId = existingConversation.Id,
+                    ArtifactId = existingConversation.ArtifactId!.Value,
+                    Title = existingConversation.Title,
+                    CreatedAt = existingConversation.CreatedAt,
+                    IsExisting = true
+                };
+            }
+
+            // Create a new artifact conversation
+            var now = DateTime.UtcNow;
+            var conversation = new ChatConversation
+            {
+                UserId = userId,
+                Type = ConversationType.Artifact,
+                ArtifactId = piece.Id,
+                Title = piece.Name,
+                CreatedAt = now,
+                UpdatedAt = now
+            };
+
+            await _conversationRepository.AddAsync(conversation, cancellationToken);
+
+            return new StartArtifactChatResponseDto
+            {
+                ConversationId = conversation.Id,
+                ArtifactId = piece.Id,
+                Title = conversation.Title,
+                CreatedAt = conversation.CreatedAt,
+                IsExisting = false
             };
         }
 
@@ -63,6 +120,8 @@ namespace EgyptianMuseum.Application.Services.Chat
             {
                 throw new KeyNotFoundException("Conversation not found");
             }
+
+
 
             if (conversation.UserId != userId)
             {

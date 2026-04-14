@@ -1,9 +1,11 @@
 using EgyptianMuseum.Application.Interfaces;
 using EgyptianMuseum.Application.Services.Auth;
 using EgyptianMuseum.Application.Services.Chat;
+using EgyptianMuseum.Application.Services.ScannedArtifacts;
 using EgyptianMuseum.Domain.Entities;
 using EgyptianMuseum.Infrastructure.Data;
 using EgyptianMuseum.Infrastructure.Repositories;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -75,6 +77,12 @@ namespace EgyptianMuseum.API
             builder.Services.AddScoped<IChatConversationRepository, ChatConversationRepository>();
             builder.Services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
             builder.Services.AddScoped<IAiChatService, MockAiChatService>();
+
+            // Register ScannedArtifact services and repositories
+            builder.Services.AddScoped<IScannedArtifactService, ScannedArtifactService>();
+            builder.Services.AddScoped<IScannedArtifactRepository, ScannedArtifactRepository>();
+            builder.Services.AddScoped<IPieceRepository, PieceRepository>();
+
 
 
             #region SwaggerSettings
