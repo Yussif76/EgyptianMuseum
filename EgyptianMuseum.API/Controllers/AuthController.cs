@@ -74,6 +74,7 @@ namespace EgyptianMuseum.API.Controllers
                 userId = user.Id,
                 email = user.Email,
                 name = user.Name,
+                language = user.PreferredLanguage
                 //roles = roles
             });
         }

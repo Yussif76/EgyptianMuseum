@@ -21,6 +21,19 @@ namespace EgyptianMuseum.Infrastructure.Repositories
                 .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
         }
 
+        public async Task<ChatConversation?> GetByUserAndArtifactAsync(
+            string userId,
+            int artifactId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.ChatConversations
+                .FirstOrDefaultAsync(
+                    c => c.UserId == userId && c.ArtifactId == artifactId,
+                    cancellationToken);
+        }
+
+
+
         public async Task<List<ChatConversation>> GetUserConversationsAsync(
             string userId,
             int skip,
