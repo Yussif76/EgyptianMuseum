@@ -11,7 +11,6 @@ namespace EgyptianMuseum.Domain.Entities
         public string? Title { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-        
         public virtual ICollection<ChatMessage> Messages { get; set; } = new List<ChatMessage>();
     }
 }

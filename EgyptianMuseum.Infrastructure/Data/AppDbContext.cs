@@ -15,6 +15,7 @@ namespace EgyptianMuseum.Infrastructure.Data
         public DbSet<ChatMessage> ChatMessages { get; set; } = null!;
         public DbSet<Piece> Pieces { get; set; } = null!;
         public DbSet<ScannedArtifact> ScannedArtifacts { get; set; } = null!;
+        public DbSet<Feedback> Feedbacks { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -81,6 +82,24 @@ namespace EgyptianMuseum.Infrastructure.Data
                     .WithMany()
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Feedback configuration
+            modelBuilder.Entity<Feedback>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.TargetType).HasConversion<int>();
+                entity.Property(e => e.Rating).IsRequired();
+                entity.Property(e => e.Comment).IsRequired().HasMaxLength(1000);
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => new { e.UserId, e.TargetType, e.TargetId });
             });
         }
     }
