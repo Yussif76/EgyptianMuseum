@@ -68,7 +68,7 @@ namespace EgyptianMuseum.API.Controllers
             {
                 var userId = GetUserId();
                 var result = await _scannedArtifactService.GetUserScannedArtifactsAsync(userId, cancellationToken);
-                return Ok(new { success = true, data = result });
+                return Ok(new { success = true, message = "Scanned artifacts retrieved successfully", data = result });
             }
             catch (UnauthorizedAccessException)
             {
@@ -90,7 +90,7 @@ namespace EgyptianMuseum.API.Controllers
 
                 var userId = GetUserId();
                 var result = await _scannedArtifactService.GetByIdAsync(userId, id, cancellationToken);
-                return Ok(new { success = true, data = result });
+                return Ok(new { success = true, message = "Scanned artifact retrieved successfully", data = result });
             }
             catch (UnauthorizedAccessException)
             {

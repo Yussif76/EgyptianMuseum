@@ -1,6 +1,7 @@
 using EgyptianMuseum.Application.Interfaces;
 using EgyptianMuseum.Application.Services.Auth;
 using EgyptianMuseum.Application.Services.Chat;
+using EgyptianMuseum.Application.Services.Feedback;
 using EgyptianMuseum.Application.Services.ScannedArtifacts;
 using EgyptianMuseum.Domain.Entities;
 using EgyptianMuseum.Infrastructure.Data;
@@ -71,7 +72,7 @@ namespace EgyptianMuseum.API
 
 
             builder.Services.AddScoped<IAuthService, AuthService>();
-            
+
             // Register Chat services and repositories
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IChatConversationRepository, ChatConversationRepository>();
@@ -82,6 +83,10 @@ namespace EgyptianMuseum.API
             builder.Services.AddScoped<IScannedArtifactService, ScannedArtifactService>();
             builder.Services.AddScoped<IScannedArtifactRepository, ScannedArtifactRepository>();
             builder.Services.AddScoped<IPieceRepository, PieceRepository>();
+
+            // Register Feedback services and repositories
+            builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+            builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
 
 
