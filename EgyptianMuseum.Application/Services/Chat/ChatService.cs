@@ -200,6 +200,43 @@ namespace EgyptianMuseum.Application.Services.Chat
             return dtos;
         }
 
+        public async Task<List<ChatConversationDto>> SearchConversationsAsync(
+            string userId,
+            string title,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+            {
+                throw new ArgumentException("Title cannot be empty");
+            }
+
+            var conversations = await _conversationRepository.SearchConversationsByTitleAsync(
+                userId,
+                title,
+                cancellationToken);
+
+            var dtos = new List<ChatConversationDto>();
+            foreach (var conv in conversations)
+            {
+                var lastMessage = await _messageRepository.GetLastMessageAsync(conv.Id, cancellationToken);
+
+                dtos.Add(new ChatConversationDto
+                {
+                    Id = conv.Id,
+                    Title = conv.Title,
+                    ArtifactId = conv.ArtifactId,
+                    Type = conv.Type.ToString(),
+                    CreatedAt = conv.CreatedAt,
+                    UpdatedAt = conv.UpdatedAt,
+                    LastMessagePreview = lastMessage?.Text.Length > 50
+                        ? lastMessage.Text.Substring(0, 50) + "..."
+                        : lastMessage?.Text
+                });
+            }
+
+            return dtos;
+        }
+
         public async Task<List<ChatMessageDto>> GetConversationMessagesAsync(
             string userId,
             int conversationId,

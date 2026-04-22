@@ -172,6 +172,33 @@ namespace EgyptianMuseum.API.Controllers
             }
         }
 
+        [HttpGet("conversations/search")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> SearchConversations(
+            [FromQuery] string? title,
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(title))
+                    return BadRequest(new { success = false, message = "Title parameter is required and cannot be empty" });
+
+                var userId = GetUserId();
+                var result = await _chatService.SearchConversationsAsync(userId, title, cancellationToken);
+                return Ok(new { success = true, data = result });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { success = false, message = "User not authenticated" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
         [HttpPut("{conversationId}/title")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

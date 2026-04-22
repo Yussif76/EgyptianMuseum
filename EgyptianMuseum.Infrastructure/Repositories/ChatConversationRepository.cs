@@ -48,6 +48,17 @@ namespace EgyptianMuseum.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
+        public async Task<List<ChatConversation>> SearchConversationsByTitleAsync(
+            string userId,
+            string title,
+            CancellationToken cancellationToken = default)
+        {
+            return await _context.ChatConversations
+                .Where(c => c.UserId == userId && EF.Functions.Like(c.Title, $"%{title}%"))
+                .OrderByDescending(c => c.UpdatedAt)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task AddAsync(ChatConversation conversation, CancellationToken cancellationToken = default)
         {
             await _context.ChatConversations.AddAsync(conversation, cancellationToken);
