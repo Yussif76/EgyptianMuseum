@@ -25,7 +25,7 @@ namespace EgyptianMuseum.Infrastructure.Repositories
             return await _context.ScannedArtifacts
                 .Include(s => s.Piece)
                 .Where(s => s.UserId == userId)
-                .OrderByDescending(s => s.ScannedAt)
+                 .OrderByDescending(s => s.ScannedAt)
                 .ToListAsync(cancellationToken);
         }
 
