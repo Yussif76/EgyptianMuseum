@@ -44,10 +44,22 @@ namespace EgyptianMuseum.Application.Services.Feedback
                 throw new ArgumentException("Comment cannot be empty");
             }
 
-            // Validate target exists
-            if (targetType == FeedbackTargetType.Artifact)
+            // Validate targetId based on target type
+            if (targetType == FeedbackTargetType.App)
             {
-                var piece = await _pieceRepository.GetByIdAsync(request.TargetId, cancellationToken);
+                if (request.TargetId.HasValue)
+                {
+                    throw new ArgumentException("Target ID must be null for App feedback");
+                }
+            }
+            else if (targetType == FeedbackTargetType.Artifact)
+            {
+                if (!request.TargetId.HasValue)
+                {
+                    throw new ArgumentException("Target ID is required for Artifact feedback");
+                }
+
+                var piece = await _pieceRepository.GetByIdAsync(request.TargetId.Value, cancellationToken);
                 if (piece == null)
                 {
                     throw new KeyNotFoundException($"Artifact with ID {request.TargetId} not found");
@@ -55,7 +67,12 @@ namespace EgyptianMuseum.Application.Services.Feedback
             }
             else if (targetType == FeedbackTargetType.Chat)
             {
-                var conversation = await _chatConversationRepository.GetByIdAsync(request.TargetId, cancellationToken);
+                if (!request.TargetId.HasValue)
+                {
+                    throw new ArgumentException("Target ID is required for Chat feedback");
+                }
+
+                var conversation = await _chatConversationRepository.GetByIdAsync(request.TargetId.Value, cancellationToken);
                 if (conversation == null)
                 {
                     throw new KeyNotFoundException($"Chat conversation with ID {request.TargetId} not found");
@@ -69,7 +86,7 @@ namespace EgyptianMuseum.Application.Services.Feedback
                 TargetType = targetType,
                 TargetId = request.TargetId,
                 Rating = request.Rating,
-                Comment = request.Comment.Trim(),
+                Comment = request.Comment?.Trim() ?? string.Empty,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -109,13 +126,24 @@ namespace EgyptianMuseum.Application.Services.Feedback
         public async Task<List<FeedbackDto>> GetByTargetAsync(
             string userId,
             string targetType,
-            int targetId,
+            int? targetId,
             CancellationToken cancellationToken = default)
         {
             // Parse target type
             if (!Enum.TryParse<FeedbackTargetType>(targetType, true, out var parsedTargetType))
             {
                 throw new ArgumentException($"Invalid target type: {targetType}");
+            }
+
+            // Validate targetId based on target type
+            if (parsedTargetType == FeedbackTargetType.App && targetId.HasValue)
+            {
+                throw new ArgumentException("Target ID must be null for App feedback");
+            }
+
+            if (parsedTargetType != FeedbackTargetType.App && !targetId.HasValue)
+            {
+                throw new ArgumentException($"Target ID is required for {targetType} feedback");
             }
 
             var feedbackList = await _feedbackRepository.GetByTargetAsync(parsedTargetType, targetId, cancellationToken);

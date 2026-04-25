@@ -6,7 +6,7 @@ namespace EgyptianMuseum.Application.Interfaces
     {
         Task<StartGeneralChatResponseDto> StartGeneralChatAsync(string userId, CancellationToken cancellationToken = default);
         Task<StartArtifactChatResponseDto> StartArtifactChatAsync(string userId, StartArtifactChatRequestDto request, CancellationToken cancellationToken = default);
-        Task<SendMessageResponseDto> SendMessageAsync(string userId, int conversationId, SendMessageRequestDto request, CancellationToken cancellationToken = default);
+        Task<ChatMessageDto> SendMessageAsync(string userId, int conversationId, SendMessageRequestDto request, CancellationToken cancellationToken = default);
         Task<List<ChatConversationDto>> GetUserConversationsAsync(string userId, int skip, int take, CancellationToken cancellationToken = default);
         Task<List<ChatConversationDto>> SearchConversationsAsync(string userId, string title, CancellationToken cancellationToken = default);
         Task<List<ChatMessageDto>> GetConversationMessagesAsync(string userId, int conversationId, CancellationToken cancellationToken = default);

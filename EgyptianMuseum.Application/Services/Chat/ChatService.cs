@@ -103,12 +103,25 @@ namespace EgyptianMuseum.Application.Services.Chat
             };
         }
 
-        public async Task<SendMessageResponseDto> SendMessageAsync(
+        public async Task<ChatMessageDto> SendMessageAsync(
             string userId,
             int conversationId,
             SendMessageRequestDto request,
             CancellationToken cancellationToken = default)
         {
+            // Validate senderType
+            if (string.IsNullOrWhiteSpace(request.SenderType))
+            {
+                throw new ArgumentException("SenderType cannot be empty");
+            }
+
+            // Validate senderType is either "User" or "Bot"
+            if (request.SenderType != "User" && request.SenderType != "Bot")
+            {
+                throw new ArgumentException("SenderType must be either 'User' or 'Bot'");
+            }
+
+            // Validate message
             if (string.IsNullOrWhiteSpace(request.Message))
             {
                 throw new ArgumentException("Message cannot be empty");
@@ -121,48 +134,37 @@ namespace EgyptianMuseum.Application.Services.Chat
                 throw new KeyNotFoundException("Conversation not found");
             }
 
-
-
             if (conversation.UserId != userId)
             {
                 throw new UnauthorizedAccessException("You do not have access to this conversation");
             }
 
-            // Save user message
-            var userMessage = new ChatMessage
+            // Parse senderType string to enum
+            var senderType = request.SenderType == "User" ? SenderType.User : SenderType.Bot;
+
+            // Save message with the senderType as received
+            var message = new ChatMessage
             {
                 ConversationId = conversationId,
-                SenderType = SenderType.User,
+                SenderType = senderType,
                 Text = request.Message,
                 SentAt = DateTime.UtcNow
             };
 
-            await _messageRepository.AddAsync(userMessage, cancellationToken);
-
-            // Generate AI reply
-            var botReply = await _aiChatService.GenerateReplyAsync(conversation, request.Message, cancellationToken);
-
-            // Save bot message
-            var botMessage = new ChatMessage
-            {
-                ConversationId = conversationId,
-                SenderType = SenderType.Bot,
-                Text = botReply,
-                SentAt = DateTime.UtcNow
-            };
-
-            await _messageRepository.AddAsync(botMessage, cancellationToken);
+            await _messageRepository.AddAsync(message, cancellationToken);
 
             // Update conversation timestamp
             conversation.UpdatedAt = DateTime.UtcNow;
             await _conversationRepository.UpdateAsync(conversation, cancellationToken);
 
-            return new SendMessageResponseDto
+            // Return the saved message as a DTO
+            return new ChatMessageDto
             {
-                ConversationId = conversationId,
-                UserMessage = request.Message,
-                BotReply = botReply,
-                SentAt = userMessage.SentAt
+                Id = message.Id,
+                ConversationId = message.ConversationId,
+                SenderType = message.SenderType.ToString(),
+                Text = message.Text,
+                SentAt = message.SentAt
             };
         }
 
@@ -261,6 +263,7 @@ namespace EgyptianMuseum.Application.Services.Chat
                 .Select(m => new ChatMessageDto
                 {
                     Id = m.Id,
+                    ConversationId = m.ConversationId,
                     SenderType = m.SenderType.ToString(),
                     Text = m.Text,
                     SentAt = m.SentAt

@@ -29,10 +29,16 @@ namespace EgyptianMuseum.Infrastructure.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        public async Task<List<Feedback>> GetByTargetAsync(FeedbackTargetType targetType, int targetId, CancellationToken cancellationToken = default)
+        public async Task<List<Feedback>> GetByTargetAsync(FeedbackTargetType targetType, int? targetId, CancellationToken cancellationToken = default)
         {
-            return await _context.Feedbacks
-                .Where(f => f.TargetType == targetType && f.TargetId == targetId)
+            var query = _context.Feedbacks.Where(f => f.TargetType == targetType);
+
+            if (targetId.HasValue)
+            {
+                query = query.Where(f => f.TargetId == targetId);
+            }
+
+            return await query
                 .OrderByDescending(f => f.CreatedAt)
                 .ToListAsync(cancellationToken);
         }

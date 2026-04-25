@@ -99,7 +99,16 @@ namespace EgyptianMuseum.API.Controllers
                 if (conversationId <= 0)
                     return BadRequest(new { success = false, message = "Invalid conversation ID" });
 
-                if (string.IsNullOrWhiteSpace(request?.Message))
+                if (request == null)
+                    return BadRequest(new { success = false, message = "Request body cannot be empty" });
+
+                if (string.IsNullOrWhiteSpace(request.SenderType))
+                    return BadRequest(new { success = false, message = "SenderType is required" });
+
+                if (request.SenderType != "User" && request.SenderType != "Bot")
+                    return BadRequest(new { success = false, message = "SenderType must be either 'User' or 'Bot'" });
+
+                if (string.IsNullOrWhiteSpace(request.Message))
                     return BadRequest(new { success = false, message = "Message cannot be empty" });
 
                 var userId = GetUserId();

@@ -74,19 +74,25 @@ namespace EgyptianMuseum.API.Controllers
             }
         }
 
-        [HttpGet("target/{targetType}/{targetId}")]
+        [HttpGet("target/{targetType}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByTarget(
             string targetType,
-            int targetId,
+            [FromQuery] int? targetId,
             CancellationToken cancellationToken)
         {
             try
             {
-                if (targetId <= 0)
-                    return BadRequest(new { success = false, message = "Target ID must be greater than 0" });
+                if (!string.IsNullOrWhiteSpace(targetType))
+                {
+                    var normalizedType = targetType.ToLower();
+                    if (normalizedType != "app" && (!targetId.HasValue || targetId <= 0))
+                    {
+                        return BadRequest(new { success = false, message = "Target ID must be provided and greater than 0 for Artifact and Chat feedback" });
+                    }
+                }
 
                 var userId = GetUserId();
                 var result = await _feedbackService.GetByTargetAsync(userId, targetType, targetId, cancellationToken);
