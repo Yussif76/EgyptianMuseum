@@ -54,13 +54,20 @@ namespace EgyptianMuseum.Infrastructure.Repositories
 
         public async Task<List<Tour>> GetFilteredToursAsync(double estimatedTime, int rooms)
         {
+            var estimatedMinutes = estimatedTime * 60;
+
             return await _context.Tours
-       .Include(t => t.RoomTours)
-           .ThenInclude(rt => rt.Room)
-       .Where(t =>
-           EF.Functions.DateDiffHour(t.StartTime, t.EndTime) <= estimatedTime &&
-           t.RoomTours.Count() <= rooms)
-       .ToListAsync();
+                .Include(t => t.RoomTours)
+                .ThenInclude(rt => rt.Room)
+                .Where(t =>
+                    EF.Functions.DateDiffMinute(t.StartTime, t.EndTime) <= estimatedMinutes &&
+                    t.RoomTours.Count <= rooms
+                )
+                .OrderByDescending(t => t.RoomTours.Count) // 
+                .ThenByDescending(t =>
+                    EF.Functions.DateDiffMinute(t.StartTime, t.EndTime)
+                ) 
+                .ToListAsync();
         }
     }
 }
