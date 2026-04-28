@@ -16,6 +16,12 @@ namespace EgyptianMuseum.Infrastructure.Data
         public DbSet<Piece> Pieces { get; set; } = null!;
         public DbSet<ScannedArtifact> ScannedArtifacts { get; set; } = null!;
         public DbSet<Feedback> Feedbacks { get; set; } = null!;
+        public DbSet<Notification> Notifications { get; set; }= null!;
+        public DbSet<UserNotification> UserNotifications { get; set; }= null!;
+        public DbSet<Tour> Tours { get; set; }
+        public DbSet<Room> Rooms { get; set; } = null!;
+        public DbSet<RoomTour> RoomTours { get; set; }=null!;
+        public DbSet<UserTour> UserTours { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -101,7 +107,21 @@ namespace EgyptianMuseum.Infrastructure.Data
 
                 entity.HasIndex(e => new { e.UserId, e.TargetType, e.TargetId });
             });
+            modelBuilder.Entity<UserNotification>()
+                .HasOne(un => un.User)
+                .WithMany()
+                .HasForeignKey(un => un.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserNotification>()
+                .HasOne(un => un.Notification)
+                .WithMany(n => n.UserNotifications)
+                .HasForeignKey(un => un.NotificationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+           
         }
+        
     }
 }
 

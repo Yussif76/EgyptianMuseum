@@ -2,7 +2,9 @@ using EgyptianMuseum.Application.Interfaces;
 using EgyptianMuseum.Application.Services.Auth;
 using EgyptianMuseum.Application.Services.Chat;
 using EgyptianMuseum.Application.Services.Feedback;
+using EgyptianMuseum.Application.Services.NotifictionsService;
 using EgyptianMuseum.Application.Services.ScannedArtifacts;
+using EgyptianMuseum.Application.Services.TourService;
 using EgyptianMuseum.Domain.Entities;
 using EgyptianMuseum.Infrastructure.Data;
 using EgyptianMuseum.Infrastructure.Repositories;
@@ -95,6 +97,17 @@ namespace EgyptianMuseum.API
             // Register Feedback services and repositories
             builder.Services.AddScoped<IFeedbackService, FeedbackService>();
             builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+
+
+            // Register Notification services and repositories
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
+
+            // Register Tour services and repositories
+
+            builder.Services.AddScoped<ITourRepository, TourRepository>();
+            builder.Services.AddScoped<ITourService, TourService>();
+
 
 
 
