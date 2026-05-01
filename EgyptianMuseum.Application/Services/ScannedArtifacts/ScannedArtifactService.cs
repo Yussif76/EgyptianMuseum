@@ -7,11 +7,11 @@ namespace EgyptianMuseum.Application.Services.ScannedArtifacts
     public class ScannedArtifactService : IScannedArtifactService
     {
         private readonly IScannedArtifactRepository _scannedArtifactRepository;
-        private readonly IPieceRepository _pieceRepository;
+        private readonly IPiecesRepository<Pieces> _pieceRepository;
 
         public ScannedArtifactService(
             IScannedArtifactRepository scannedArtifactRepository,
-            IPieceRepository pieceRepository)
+            IPiecesRepository<Pieces> pieceRepository)
         {
             _scannedArtifactRepository = scannedArtifactRepository;
             _pieceRepository = pieceRepository;
@@ -27,7 +27,7 @@ namespace EgyptianMuseum.Application.Services.ScannedArtifacts
 
             var labelText = request.LabelText.Trim();
 
-            var piece = await _pieceRepository.GetByLabelTextAsync(labelText, cancellationToken);
+            var piece = await _pieceRepository.GetByCodeWithTranslationsAsync(labelText, cancellationToken);
             if (piece == null)
                 throw new KeyNotFoundException($"No artifact found with label '{labelText}'");
 
@@ -41,7 +41,7 @@ namespace EgyptianMuseum.Application.Services.ScannedArtifacts
             };
 
             await _scannedArtifactRepository.AddAsync(scannedArtifact, cancellationToken);
-
+            var translation = piece.Translations.FirstOrDefault(t => t.LanguageCode == "en");
             return new ScanArtifactResponseDto
             {
                 ScannedArtifactId = scannedArtifact.Id,
@@ -50,10 +50,10 @@ namespace EgyptianMuseum.Application.Services.ScannedArtifacts
                 IsFavorite = scannedArtifact.IsFavorite,
                 ScannedAt = scannedArtifact.ScannedAt,
                 PieceName = piece.Name,
-                PieceDescription = piece.Description,
-                PieceImageUrl = piece.ImageUrl,
-                PiecePeriod = piece.Period,
-                PieceCategory = piece.Category
+                PieceDescription =translation.TextNarration ,
+                PieceImageUrl = piece.PhotoPath,
+                PiecePeriod = translation.Period,
+                PieceCategory = translation.Category
             };
         }
 
@@ -126,10 +126,7 @@ namespace EgyptianMuseum.Application.Services.ScannedArtifacts
                 IsFavorite = s.IsFavorite,
                 ScannedAt = s.ScannedAt,
                 PieceName = s.Piece?.Name,
-                PieceDescription = s.Piece?.Description,
-                PieceImageUrl = s.Piece?.ImageUrl,
-                PiecePeriod = s.Piece?.Period,
-                PieceCategory = s.Piece?.Category
+                
             };
         }
     }

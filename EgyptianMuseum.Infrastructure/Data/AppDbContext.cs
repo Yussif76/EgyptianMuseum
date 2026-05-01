@@ -13,13 +13,15 @@ namespace EgyptianMuseum.Infrastructure.Data
 
         public DbSet<ChatConversation> ChatConversations { get; set; } = null!;
         public DbSet<ChatMessage> ChatMessages { get; set; } = null!;
-        public DbSet<Piece> Pieces { get; set; } = null!;
         public DbSet<ScannedArtifact> ScannedArtifacts { get; set; } = null!;
         public DbSet<Feedback> Feedbacks { get; set; } = null!;
+        public DbSet<Pieces> pieces { get; set; }
+        public DbSet<PieceTranslation> PieceTranslations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Pieces>().ToTable("Artifactpieces");
 
             // ChatConversation configuration
             modelBuilder.Entity<ChatConversation>(entity =>
@@ -50,20 +52,20 @@ namespace EgyptianMuseum.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Piece configuration
-            modelBuilder.Entity<Piece>(entity =>
-            {
-                entity.HasKey(e => e.Id);
+            // Pieces configuration
+            modelBuilder.Entity<PieceTranslation>()
+            .HasOne(x => x.Piece)
+            .WithMany(x => x.Translations)
+            .HasForeignKey(x => x.PieceId)
+            .HasConstraintName("FK_PieceTranslations_Artifactpieces_PieceId");
 
-                entity.Property(e => e.Name).IsRequired().HasMaxLength(500);
-                entity.Property(e => e.LabelText).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.Description).HasMaxLength(2000);
-                entity.Property(e => e.ImageUrl).HasMaxLength(1000);
-                entity.Property(e => e.Period).HasMaxLength(255);
-                entity.Property(e => e.Category).HasMaxLength(255);
-
-                entity.HasIndex(e => e.LabelText).IsUnique();
-            });
+            modelBuilder.Entity<PieceTranslation>()
+                .HasIndex(x => new { x.PieceId, x.LanguageCode })
+                .IsUnique();
+            modelBuilder.Entity<Pieces>().HasQueryFilter(p => !p.IsDeleted);
+            modelBuilder.Entity<Pieces>()
+            .HasIndex(p => p.Code)
+            .IsUnique();
 
             // ScannedArtifact configuration
             modelBuilder.Entity<ScannedArtifact>(entity =>
@@ -76,7 +78,8 @@ namespace EgyptianMuseum.Infrastructure.Data
                 entity.HasOne(e => e.Piece)
                     .WithMany(p => p.ScannedArtifacts)
                     .HasForeignKey(e => e.PieceId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .HasConstraintName("FK_ScannedArtifacts_Artifactpieces_PieceId");
 
                 entity.HasOne(e => e.User)
                     .WithMany()
@@ -101,6 +104,8 @@ namespace EgyptianMuseum.Infrastructure.Data
 
                 entity.HasIndex(e => new { e.UserId, e.TargetType, e.TargetId });
             });
+            
+
         }
     }
 }

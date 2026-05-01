@@ -3,13 +3,17 @@ using EgyptianMuseum.Application.Services.Auth;
 using EgyptianMuseum.Application.Services.Chat;
 using EgyptianMuseum.Application.Services.Feedback;
 using EgyptianMuseum.Application.Services.ScannedArtifacts;
+using EgyptianMuseum.Application.Services.Services;
 using EgyptianMuseum.Domain.Entities;
 using EgyptianMuseum.Infrastructure.Data;
+using EgyptianMuseum.Infrastructure.Data.Interceptor;
+using EgyptianMuseum.Infrastructure.Helpers;
 using EgyptianMuseum.Infrastructure.Repositories;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -90,13 +94,16 @@ namespace EgyptianMuseum.API
             // Register ScannedArtifact services and repositories
             builder.Services.AddScoped<IScannedArtifactService, ScannedArtifactService>();
             builder.Services.AddScoped<IScannedArtifactRepository, ScannedArtifactRepository>();
-            builder.Services.AddScoped<IPieceRepository, PieceRepository>();
+
 
             // Register Feedback services and repositories
             builder.Services.AddScoped<IFeedbackService, FeedbackService>();
             builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
-
+            // Register Pieces services and repositories
+            builder.Services.AddAutoMapper(typeof(PiecesProfile).Assembly);
+            builder.Services.AddScoped(typeof(IPiecesRepository<>), typeof(PiecesRepository<>));
+            builder.Services.AddScoped<IPiecesServices, PiecesService>();
 
             #region SwaggerSettings
             builder.Services.AddSwaggerGen(options =>

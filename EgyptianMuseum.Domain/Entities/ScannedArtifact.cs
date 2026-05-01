@@ -9,7 +9,7 @@ namespace EgyptianMuseum.Domain.Entities
         public bool IsFavorite { get; set; }
         public DateTime ScannedAt { get; set; }
 
-        public virtual Piece Piece { get; set; } = null!;
+        public virtual Pieces Piece { get; set; } = null!;
         public virtual ApplicationUser User { get; set; } = null!;
     }
 }
