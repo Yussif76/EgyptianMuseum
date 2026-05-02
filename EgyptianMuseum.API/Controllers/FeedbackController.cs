@@ -9,7 +9,6 @@ namespace EgyptianMuseum.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class FeedbackController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;
@@ -28,6 +27,7 @@ namespace EgyptianMuseum.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -59,25 +59,24 @@ namespace EgyptianMuseum.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetUserFeedback(CancellationToken cancellationToken)
         {
             try
             {
-                var userId = GetUserId();
+                // Optional user context - if authenticated, return user's own feedback, else return all
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var result = await _feedbackService.GetUserFeedbackAsync(userId, cancellationToken);
                 return Ok(new { success = true, message = "User feedback retrieved successfully", data = result });
             }
-            catch (UnauthorizedAccessException)
+            catch (Exception ex)
             {
-                return Unauthorized(new { success = false, message = "User not authenticated" });
+                return BadRequest(new { success = false, message = ex.Message });
             }
         }
 
         [HttpGet("target/{targetType}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> GetByTarget(
             string targetType,
             [FromQuery] int? targetId,
@@ -94,13 +93,10 @@ namespace EgyptianMuseum.API.Controllers
                     }
                 }
 
-                var userId = GetUserId();
+                // GetByTarget is public, so optional user context
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var result = await _feedbackService.GetByTargetAsync(userId, targetType, targetId, cancellationToken);
                 return Ok(new { success = true, message = "Target feedback retrieved successfully", data = result });
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Unauthorized(new { success = false, message = "User not authenticated" });
             }
             catch (ArgumentException ex)
             {
@@ -109,6 +105,7 @@ namespace EgyptianMuseum.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]

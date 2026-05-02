@@ -21,10 +21,17 @@ namespace EgyptianMuseum.Infrastructure.Repositories
             await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<List<Feedback>> GetByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+        public async Task<List<Feedback>> GetByUserIdAsync(string? userId, CancellationToken cancellationToken = default)
         {
-            return await _context.Feedbacks
-                .Where(f => f.UserId == userId)
+            var query = _context.Feedbacks.AsQueryable();
+
+            // If userId provided, filter by that user; otherwise return all
+            if (!string.IsNullOrEmpty(userId))
+            {
+                query = query.Where(f => f.UserId == userId);
+            }
+
+            return await query
                 .OrderByDescending(f => f.CreatedAt)
                 .ToListAsync(cancellationToken);
         }

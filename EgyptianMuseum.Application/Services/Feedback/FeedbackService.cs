@@ -104,7 +104,7 @@ namespace EgyptianMuseum.Application.Services.Feedback
         }
 
         public async Task<List<FeedbackDto>> GetUserFeedbackAsync(
-            string userId,
+            string? userId,
             CancellationToken cancellationToken = default)
         {
             var feedbackList = await _feedbackRepository.GetByUserIdAsync(userId, cancellationToken);
@@ -124,7 +124,7 @@ namespace EgyptianMuseum.Application.Services.Feedback
         }
 
         public async Task<List<FeedbackDto>> GetByTargetAsync(
-            string userId,
+            string? userId,
             string targetType,
             int? targetId,
             CancellationToken cancellationToken = default)
@@ -148,9 +148,16 @@ namespace EgyptianMuseum.Application.Services.Feedback
 
             var feedbackList = await _feedbackRepository.GetByTargetAsync(parsedTargetType, targetId, cancellationToken);
 
-            // Return only current user's feedback for that target
+            // If user is authenticated, filter by userId (user's own feedback)
+            // If user is not authenticated, return all feedback
+            if (!string.IsNullOrEmpty(userId))
+            {
+                feedbackList = feedbackList
+                    .Where(f => f.UserId == userId)
+                    .ToList();
+            }
+
             return feedbackList
-                .Where(f => f.UserId == userId)
                 .OrderByDescending(f => f.CreatedAt)
                 .Select(f => new FeedbackDto
                 {
