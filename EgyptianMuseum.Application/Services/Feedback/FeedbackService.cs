@@ -8,12 +8,12 @@ namespace EgyptianMuseum.Application.Services.Feedback
     public class FeedbackService : IFeedbackService
     {
         private readonly IFeedbackRepository _feedbackRepository;
-        private readonly IPieceRepository _pieceRepository;
+        private readonly IPiecesRepository<Pieces> _pieceRepository;
         private readonly IChatConversationRepository _chatConversationRepository;
 
         public FeedbackService(
             IFeedbackRepository feedbackRepository,
-            IPieceRepository pieceRepository,
+            IPiecesRepository<Pieces> pieceRepository,
             IChatConversationRepository chatConversationRepository)
         {
             _feedbackRepository = feedbackRepository;

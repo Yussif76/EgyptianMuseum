@@ -24,6 +24,7 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         {
             return await _context.ScannedArtifacts
                 .Include(s => s.Piece)
+                    .ThenInclude(p => p.Translations)
                 .Where(s => s.UserId == userId)
                 .OrderByDescending(s => s.ScannedAt)
                 .ToListAsync(cancellationToken);
@@ -39,6 +40,7 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         {
             return await _context.ScannedArtifacts
                 .Include(s => s.Piece)
+                    .ThenInclude(p => p.Translations)
                 .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
         }
 
@@ -59,6 +61,24 @@ namespace EgyptianMuseum.Infrastructure.Repositories
                 _context.ScannedArtifacts.Remove(scannedArtifact);
                 await _context.SaveChangesAsync(cancellationToken);
             }
+        }
+
+        public async Task<ScannedArtifact?> GetByUserIdAndPieceIdAsync(string userId, int pieceId, CancellationToken cancellationToken = default)
+        {
+            return await _context.ScannedArtifacts
+                .Include(s => s.Piece)
+                    .ThenInclude(p => p.Translations)
+                .FirstOrDefaultAsync(s => s.UserId == userId && s.PieceId == pieceId, cancellationToken);
+        }
+
+        public async Task<List<ScannedArtifact>> GetFavoritesByUserIdAsync(string userId, CancellationToken cancellationToken = default)
+        {
+            return await _context.ScannedArtifacts
+                .Include(s => s.Piece)
+                    .ThenInclude(p => p.Translations)
+                .Where(s => s.UserId == userId && s.IsFavorite)
+                .OrderByDescending(s => s.ScannedAt)
+                .ToListAsync(cancellationToken);
         }
     }
 }

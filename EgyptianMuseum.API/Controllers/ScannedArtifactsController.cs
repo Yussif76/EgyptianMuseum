@@ -34,7 +34,8 @@ namespace EgyptianMuseum.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> ScanArtifact(
             [FromBody] ScanArtifactRequestDto request,
-            CancellationToken cancellationToken)
+            [FromQuery] string lang = "en",
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -42,7 +43,7 @@ namespace EgyptianMuseum.API.Controllers
                     return BadRequest(new { success = false, message = "Label text cannot be empty" });
 
                 var userId = GetUserId();
-                var result = await _scannedArtifactService.ScanArtifactAsync(userId, request, cancellationToken);
+                var result = await _scannedArtifactService.ScanArtifactAsync(userId, request, lang, cancellationToken);
                 return StatusCode(StatusCodes.Status201Created, new { success = true, data = result });
             }
             catch (UnauthorizedAccessException)
@@ -62,12 +63,14 @@ namespace EgyptianMuseum.API.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public async Task<IActionResult> GetUserScannedArtifacts(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetUserScannedArtifacts(
+            [FromQuery] string lang = "en",
+            CancellationToken cancellationToken = default)
         {
             try
             {
                 var userId = GetUserId();
-                var result = await _scannedArtifactService.GetUserScannedArtifactsAsync(userId, cancellationToken);
+                var result = await _scannedArtifactService.GetUserScannedArtifactsAsync(userId, cancellationToken, lang);
                 return Ok(new { success = true, message = "Scanned artifacts retrieved successfully", data = result });
             }
             catch (UnauthorizedAccessException)
@@ -81,7 +84,10 @@ namespace EgyptianMuseum.API.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetById(
+            int id,
+            [FromQuery] string lang = "en",
+            CancellationToken cancellationToken = default)
         {
             try
             {
@@ -89,7 +95,7 @@ namespace EgyptianMuseum.API.Controllers
                     return BadRequest(new { success = false, message = "Invalid ID" });
 
                 var userId = GetUserId();
-                var result = await _scannedArtifactService.GetByIdAsync(userId, id, cancellationToken);
+                var result = await _scannedArtifactService.GetByIdAsync(userId, id, cancellationToken, lang);
                 return Ok(new { success = true, message = "Scanned artifact retrieved successfully", data = result });
             }
             catch (UnauthorizedAccessException)
@@ -156,6 +162,50 @@ namespace EgyptianMuseum.API.Controllers
             catch (KeyNotFoundException)
             {
                 return NotFound(new { success = false, message = "Scanned artifact not found" });
+            }
+        }
+
+        [HttpPut("pieces/{pieceId}/favorite")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> ToggleFavoriteByPieceId(
+            int pieceId,
+            [FromBody] UpdateScannedArtifactFavoriteRequestDto request,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (pieceId <= 0)
+                    return BadRequest(new { success = false, message = "Invalid piece ID" });
+
+                var userId = GetUserId();
+                await _scannedArtifactService.UpdateFavoriteByPieceIdAsync(userId, pieceId, request.IsFavorite, cancellationToken);
+                return Ok(new { success = true, message = "Favorite status updated successfully" });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("favorites")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> GetUserFavorites(
+            [FromQuery] string lang = "en",
+            CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var userId = GetUserId();
+                var result = await _scannedArtifactService.GetUserFavoritesAsync(userId, cancellationToken, lang);
+                return Ok(new { success = true, message = "Favorite artifacts retrieved successfully", data = result });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized(new { success = false, message = "User not authenticated" });
             }
         }
     }

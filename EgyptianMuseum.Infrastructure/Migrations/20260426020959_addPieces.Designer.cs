@@ -4,6 +4,7 @@ using EgyptianMuseum.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EgyptianMuseum.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260426020959_addPieces")]
+    partial class addPieces
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,7 +194,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.ToTable("Feedbacks");
                 });
 
-            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.PieceTranslation", b =>
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Piece", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -202,15 +205,15 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.Property<string>("Category")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("LanguageCode")
+                    b.Property<string>("LabelText")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -219,7 +222,37 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.Property<string>("Period")
                         .HasColumnType("nvarchar(max)");
 
+                    b.HasKey("Id");
+
+                    b.ToTable("Pieces");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.PieceTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("PieceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PiecesId")
                         .HasColumnType("int");
 
                     b.Property<string>("TextNarration")
@@ -231,8 +264,9 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PieceId", "LanguageCode")
-                        .IsUnique();
+                    b.HasIndex("PieceId");
+
+                    b.HasIndex("PiecesId");
 
                     b.ToTable("PieceTranslations");
                 });
@@ -247,7 +281,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -268,10 +302,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Code")
-                        .IsUnique();
-
-                    b.ToTable("Artifactpieces", (string)null);
+                    b.ToTable("pieces");
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.ScannedArtifact", b =>
@@ -304,9 +335,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("PieceId");
 
-                    b.HasIndex("UserId", "PieceId")
-                        .IsUnique()
-                        .HasDatabaseName("UK_ScannedArtifacts_UserId_PieceId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("ScannedArtifacts");
                 });
@@ -468,24 +497,26 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.PieceTranslation", b =>
                 {
-                    b.HasOne("EgyptianMuseum.Domain.Entities.Pieces", "Piece")
-                        .WithMany("Translations")
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Piece", "Piece")
+                        .WithMany()
                         .HasForeignKey("PieceId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_PieceTranslations_Artifactpieces_PieceId");
+                        .IsRequired();
+
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Pieces", null)
+                        .WithMany("Translations")
+                        .HasForeignKey("PiecesId");
 
                     b.Navigation("Piece");
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.ScannedArtifact", b =>
                 {
-                    b.HasOne("EgyptianMuseum.Domain.Entities.Pieces", "Piece")
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Piece", "Piece")
                         .WithMany("ScannedArtifacts")
                         .HasForeignKey("PieceId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("FK_ScannedArtifacts_Artifactpieces_PieceId");
+                        .IsRequired();
 
                     b.HasOne("EgyptianMuseum.Domain.Entities.ApplicationUser", "User")
                         .WithMany()
@@ -554,10 +585,13 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.Navigation("Messages");
                 });
 
-            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Pieces", b =>
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Piece", b =>
                 {
                     b.Navigation("ScannedArtifacts");
+                });
 
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Pieces", b =>
+                {
                     b.Navigation("Translations");
                 });
 #pragma warning restore 612, 618

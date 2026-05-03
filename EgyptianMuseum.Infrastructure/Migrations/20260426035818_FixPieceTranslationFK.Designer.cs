@@ -4,6 +4,7 @@ using EgyptianMuseum.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EgyptianMuseum.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260426035818_FixPieceTranslationFK")]
+    partial class FixPieceTranslationFK
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -191,7 +194,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.ToTable("Feedbacks");
                 });
 
-            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.PieceTranslation", b =>
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Piece", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -201,6 +204,36 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.Property<string>("Category")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LabelText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Period")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Pieces");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.PieceTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -214,9 +247,6 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Period")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PieceId")
@@ -304,9 +334,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("PieceId");
 
-                    b.HasIndex("UserId", "PieceId")
-                        .IsUnique()
-                        .HasDatabaseName("UK_ScannedArtifacts_UserId_PieceId");
+                    b.HasIndex("UserId");
 
                     b.ToTable("ScannedArtifacts");
                 });
@@ -480,7 +508,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.ScannedArtifact", b =>
                 {
-                    b.HasOne("EgyptianMuseum.Domain.Entities.Pieces", "Piece")
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Piece", "Piece")
                         .WithMany("ScannedArtifacts")
                         .HasForeignKey("PieceId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -554,10 +582,13 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.Navigation("Messages");
                 });
 
-            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Pieces", b =>
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Piece", b =>
                 {
                     b.Navigation("ScannedArtifacts");
+                });
 
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Pieces", b =>
+                {
                     b.Navigation("Translations");
                 });
 #pragma warning restore 612, 618

@@ -10,5 +10,7 @@ namespace EgyptianMuseum.Application.Interfaces
         Task<ScannedArtifact?> GetByIdWithPieceAsync(int id, CancellationToken cancellationToken = default);
         Task UpdateAsync(ScannedArtifact scannedArtifact, CancellationToken cancellationToken = default);
         Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+        Task<ScannedArtifact?> GetByUserIdAndPieceIdAsync(string userId, int pieceId, CancellationToken cancellationToken = default);
+        Task<List<ScannedArtifact>> GetFavoritesByUserIdAsync(string userId, CancellationToken cancellationToken = default);
     }
 }
