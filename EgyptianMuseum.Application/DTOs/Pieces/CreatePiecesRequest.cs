@@ -9,7 +9,7 @@ namespace EgyptianMuseum.Application.DTOs.Pieces
     public class CreatePiecesRequest
     {
         public string Code { get; set; }
-        public string Name { get; set; }
+        //public string Name { get; set; }
         public string PhotoPath { get; set; }
         public List<PieceTranslationRequest> Translations { get; set; } = new();
     }

@@ -23,4 +23,8 @@
     <ProjectReference Include="..\EgyptianMuseum.Infrastructure\EgyptianMuseum.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\PublishProfiles\" />
+  </ItemGroup>
+
 </Project>

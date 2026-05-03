@@ -85,6 +85,10 @@ namespace EgyptianMuseum.Infrastructure.Data
                     .WithMany()
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => new { e.UserId, e.PieceId })
+                    .IsUnique()
+                    .HasDatabaseName("UK_ScannedArtifacts_UserId_PieceId");
             });
 
             // Feedback configuration

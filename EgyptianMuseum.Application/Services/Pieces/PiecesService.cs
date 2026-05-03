@@ -11,7 +11,8 @@ using Microsoft.EntityFrameworkCore;
 namespace EgyptianMuseum.Application.Services.Services
 {
     public class PiecesService(
-        IPiecesRepository<Pieces> repository) : IPiecesServices
+        IPiecesRepository<Pieces> repository,
+        IScannedArtifactRepository scannedArtifactRepository) : IPiecesServices
     {
         public Task<Pieces> CreateAsync(Pieces entity)
             => repository.CreateAsync(entity);
@@ -39,5 +40,60 @@ namespace EgyptianMuseum.Application.Services.Services
 
         public Task<List<Pieces>> GetPagedWithTranslationsAsync(int page, int pageSize)
             => repository.GetPagedWithTranslationsAsync(page, pageSize);
+
+        //public async Task<Pieces?> GetByIdWithScannedStatusAsync(int id, string userId, CancellationToken cancellationToken = default)
+        //{
+        //    var piece = await repository.GetByIdAsync(id, cancellationToken);
+        //    if (piece == null)
+        //        return null;
+
+        //    // Check if ScannedArtifact already exists
+        //    var existingScanned = await scannedArtifactRepository.GetByUserIdAndPieceIdAsync(userId, id, cancellationToken);
+
+        //    if (existingScanned == null)
+        //    {
+        //        // Create new ScannedArtifact
+        //        var newScanned = new ScannedArtifact
+        //        {
+        //            UserId = userId,
+        //            PieceId = id,
+        //            LabelText = piece.Code,
+        //            IsFavorite = false,
+        //            ScannedAt = DateTime.UtcNow
+        //        };
+
+        //        await scannedArtifactRepository.AddAsync(newScanned, cancellationToken);
+        //    }
+
+        //    return piece;
+        //}
+
+        public async Task<Pieces?> GetByCodeWithScannedStatusAsync(string code, string userId, CancellationToken cancellationToken = default)
+        {
+            var piece = await repository.GetByCodeWithTranslationsAsync(code, cancellationToken);
+            if (piece == null)
+                return null;
+
+            // Check if ScannedArtifact already exists
+            var existingScanned = await scannedArtifactRepository.GetByUserIdAndPieceIdAsync(userId, piece.Id, cancellationToken);
+
+            if (existingScanned == null)
+            {
+                // Create new ScannedArtifact
+                var newScanned = new ScannedArtifact
+                {
+                    UserId = userId,
+                    PieceId = piece.Id,
+                    LabelText = piece.Name ?? piece.Code,
+                    IsFavorite = false,
+                    ScannedAt = DateTime.UtcNow
+                };
+
+                await scannedArtifactRepository.AddAsync(newScanned, cancellationToken);
+            }
+
+            return piece;
+        }
     }
 }
+

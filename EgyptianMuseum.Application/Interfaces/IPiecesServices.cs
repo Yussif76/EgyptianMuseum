@@ -20,5 +20,7 @@ namespace EgyptianMuseum.Application.Interfaces
         Task<Pieces?> GetByCodeWithTranslationsAsync(string code, CancellationToken cancellationToken = default);
 
         Task<List<Pieces>> GetPagedWithTranslationsAsync(int page, int pageSize);
+        //Task<Pieces?> GetByIdWithScannedStatusAsync(int id, string userId, CancellationToken cancellationToken = default);
+        Task<Pieces?> GetByCodeWithScannedStatusAsync(string code, string userId, CancellationToken cancellationToken = default);
     }
 }
