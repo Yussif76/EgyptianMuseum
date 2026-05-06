@@ -10,13 +10,13 @@ namespace EgyptianMuseum.Application.Services.Chat
         private readonly IChatConversationRepository _conversationRepository;
         private readonly IChatMessageRepository _messageRepository;
         private readonly IAiChatService _aiChatService;
-        private readonly IPieceRepository _pieceRepository;
+        private readonly IPiecesRepository<Pieces> _pieceRepository;
 
         public ChatService(
             IChatConversationRepository conversationRepository,
             IChatMessageRepository messageRepository,
             IAiChatService aiChatService,
-            IPieceRepository pieceRepository)
+            IPiecesRepository<Pieces> pieceRepository)
         {
             _conversationRepository = conversationRepository;
             _messageRepository = messageRepository;
