@@ -18,6 +18,8 @@ namespace EgyptianMuseum.Infrastructure.Data
         public DbSet<Pieces> pieces { get; set; }
         public DbSet<PieceTranslation> PieceTranslations { get; set; }
         public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; } = null!;
+        public DbSet<Map> Maps { get; set; } = null!;
+        public DbSet<IndoorMapPath> IndoorMapPaths { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -127,6 +129,49 @@ namespace EgyptianMuseum.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.HasIndex(e => new { e.UserId, e.Code, e.IsUsed });
+            });
+
+            // Map configuration
+            modelBuilder.Entity<Map>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Zone).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ImageUrl).IsRequired();
+                entity.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
+
+                entity.HasMany(e => e.Paths)
+                    .WithOne(p => p.Map)
+                    .HasForeignKey(p => p.MapId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.Zone);
+                entity.HasQueryFilter(m => !m.IsDeleted);
+            });
+
+            // IndoorMapPath configuration
+            modelBuilder.Entity<IndoorMapPath>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.MapId).IsRequired();
+                entity.Property(e => e.FromRoom).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.ToRoom).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.FromX).IsRequired();
+                entity.Property(e => e.FromY).IsRequired();
+                entity.Property(e => e.ToX).IsRequired();
+                entity.Property(e => e.ToY).IsRequired();
+                entity.Property(e => e.Distance).IsRequired();
+                entity.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
+
+                entity.HasOne(e => e.Map)
+                    .WithMany(m => m.Paths)
+                    .HasForeignKey(e => e.MapId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.MapId);
+                entity.HasQueryFilter(p => !p.IsDeleted);
             });
 
 

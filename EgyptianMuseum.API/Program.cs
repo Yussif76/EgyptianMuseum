@@ -3,6 +3,7 @@ using EgyptianMuseum.Application.Services.Auth;
 using EgyptianMuseum.Application.Services.Chat;
 using EgyptianMuseum.Application.Services.Email;
 using EgyptianMuseum.Application.Services.Feedback;
+using EgyptianMuseum.Application.Services.Maps;
 using EgyptianMuseum.Application.Services.ScannedArtifacts;
 using EgyptianMuseum.Application.Services.Services;
 using EgyptianMuseum.Domain.Entities;
@@ -107,6 +108,12 @@ namespace EgyptianMuseum.API
             builder.Services.AddAutoMapper(typeof(PiecesProfile).Assembly);
             builder.Services.AddScoped(typeof(IPiecesRepository<>), typeof(PiecesRepository<>));
             builder.Services.AddScoped<IPiecesServices, PiecesService>();
+
+            // Register Map services and repositories
+            builder.Services.AddScoped<IMapService, MapService>();
+            builder.Services.AddScoped<IMapRepository, MapRepository>();
+            builder.Services.AddScoped<IIndoorMapPathService, IndoorMapPathService>();
+            builder.Services.AddScoped<IIndoorMapPathRepository, IndoorMapPathRepository>();
 
             #region SwaggerSettings
             builder.Services.AddSwaggerGen(options =>
