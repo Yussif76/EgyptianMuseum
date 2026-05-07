@@ -40,34 +40,24 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         public async Task AddUserTourAsync(UserTour userTour)
         {
             await _context.UserTours.AddAsync(userTour);
+            await _context.SaveChangesAsync();
         }
 
         public void DeleteUserTour(UserTour userTour)
         {
             _context.UserTours.Remove(userTour);
+            _context.SaveChanges();
         }
 
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
+       
 
-        public async Task<List<Tour>> GetFilteredToursAsync(double estimatedTime, int rooms)
+        public async Task<List<Tour>> GetFilteredToursAsync(double estimatedTime, int rooms,string category)
         {
-            var estimatedMinutes = estimatedTime * 60;
-
             return await _context.Tours
-                .Include(t => t.RoomTours)
-                .ThenInclude(rt => rt.Room)
-                .Where(t =>
-                    EF.Functions.DateDiffMinute(t.StartTime, t.EndTime) <= estimatedMinutes &&
-                    t.RoomTours.Count <= rooms
-                )
-                .OrderByDescending(t => t.RoomTours.Count) // 
-                .ThenByDescending(t =>
-                    EF.Functions.DateDiffMinute(t.StartTime, t.EndTime)
-                ) 
-                .ToListAsync();
+        .Include(t => t.RoomTours)
+        .ThenInclude(rt => rt.Room)
+        .Where(t => t.Category == category)
+        .ToListAsync();
         }
     }
 }

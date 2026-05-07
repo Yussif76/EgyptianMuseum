@@ -19,17 +19,30 @@ namespace EgyptianMuseum.Application.Services.TourService
             _tourRepository = tourRepository;
         }
 
-        public async Task<List<TourDto>> GetAllToursAsync(double estimatedTime, int rooms)
+        public async Task<List<TourDto>> GetAllToursAsync(double estimatedTime, int rooms, string category)
         {
 
 
 
-            var tours = await _tourRepository.GetFilteredToursAsync(estimatedTime, rooms);
+            var tours = await _tourRepository.GetFilteredToursAsync(estimatedTime, rooms, category);
 
-            return tours.Select(t => new TourDto
+            var rankedTours = tours
+                .Select(t => new
+                {
+                    Tour = t,
+                    TimeDiff = Math.Abs((t.EndTime - t.StartTime).TotalMinutes - estimatedTime * 60),
+                    RoomDiff = Math.Abs(t.RoomTours.Count - rooms)
+                })
+                .OrderBy(x => x.TimeDiff)
+                .ThenBy(x => x.RoomDiff)
+                .Select(x => x.Tour)
+                .ToList();
+
+            return rankedTours.Select(t => new TourDto
             {
                 Id = t.Id,
                 Description = t.Description,
+                Category = t.Category,
                 StartTime = t.StartTime,
                 EndTime = t.EndTime,
                 Rooms = t.RoomTours.Select(rt => new RoomDto
@@ -50,6 +63,7 @@ namespace EgyptianMuseum.Application.Services.TourService
             return new TourDto
             {
                 Id = tour.Id,
+                Category = tour.Category,
                 Description = tour.Description,
                 StartTime = tour.StartTime,
                 EndTime = tour.EndTime,
@@ -63,6 +77,8 @@ namespace EgyptianMuseum.Application.Services.TourService
 
         public async Task<bool> StartTourAsync(int tourId, string userId)
         {
+            var existing = await _tourRepository.GetUserTourAsync(tourId, userId);
+            if (existing != null) return false;
             var tour = await _tourRepository.GetByIdAsync(tourId);
             if (tour == null) return false;
 
@@ -73,7 +89,7 @@ namespace EgyptianMuseum.Application.Services.TourService
             };
 
             await _tourRepository.AddUserTourAsync(userTour);
-            await _tourRepository.SaveChangesAsync();
+            
             return true;
         }
 
@@ -83,7 +99,7 @@ namespace EgyptianMuseum.Application.Services.TourService
             if (userTour == null) return false;
 
             _tourRepository.DeleteUserTour(userTour);
-            await _tourRepository.SaveChangesAsync();
+            
             return true;
         }
     }

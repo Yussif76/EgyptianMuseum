@@ -9,7 +9,7 @@ namespace EgyptianMuseum.Application.Interfaces
 {
     public interface ITourService
     {
-        Task<List<TourDto>> GetAllToursAsync(double estimatedTime, int rooms);
+        Task<List<TourDto>> GetAllToursAsync(double estimatedTime, int rooms, string category);
         Task<TourDto?> GetTourByIdAsync(int id);
         Task<bool> StartTourAsync(int tourId, string userId);
         Task<bool> CancelTourAsync(int tourId, string userId);

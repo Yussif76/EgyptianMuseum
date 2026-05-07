@@ -25,9 +25,10 @@ namespace EgyptianMuseum.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllTours(
             [FromQuery] double estimatedTime,
-            [FromQuery] int rooms)
+            [FromQuery] int rooms,
+            [FromQuery] string category)
         {
-            var result = await _tourService.GetAllToursAsync(estimatedTime, rooms);
+            var result = await _tourService.GetAllToursAsync(estimatedTime, rooms,category);
             return Ok(result);
         }
 

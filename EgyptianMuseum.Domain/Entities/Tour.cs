@@ -20,6 +20,7 @@ namespace EgyptianMuseum.Domain.Entities
 
         [Required]
         public DateTime EndTime { get; set; }
+        public string Category { get; set; }
 
 
         public ICollection<RoomTour> RoomTours { get; set; } = new List<RoomTour>();
