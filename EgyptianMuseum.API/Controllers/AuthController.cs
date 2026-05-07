@@ -78,5 +78,67 @@ namespace EgyptianMuseum.API.Controllers
                 //roles = roles
             });
         }
+
+        [HttpPost("forgot-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request?.Email))
+                    return BadRequest(new { success = false, message = "Email is required" });
+
+                await _authService.ForgotPasswordAsync(request);
+                return Ok(new { success = true, message = "If an account with this email exists, an OTP will be sent" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("verify-otp")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequestDto request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request?.Email) || string.IsNullOrWhiteSpace(request?.Otp))
+                    return BadRequest(new { success = false, message = "Email and OTP are required" });
+
+                var isValid = await _authService.VerifyOtpAsync(request);
+                if (isValid)
+                    return Ok(new { success = true, message = "OTP verified successfully" });
+
+                return BadRequest(new { success = false, message = "Invalid OTP" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request?.Email) || 
+                    string.IsNullOrWhiteSpace(request?.Otp) ||
+                    string.IsNullOrWhiteSpace(request?.NewPassword))
+                    return BadRequest(new { success = false, message = "Email, OTP, and new password are required" });
+
+                await _authService.ResetPasswordAsync(request);
+                return Ok(new { success = true, message = "Password has been reset successfully" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

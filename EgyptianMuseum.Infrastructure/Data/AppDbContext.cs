@@ -17,6 +17,7 @@ namespace EgyptianMuseum.Infrastructure.Data
         public DbSet<Feedback> Feedbacks { get; set; } = null!;
         public DbSet<Pieces> pieces { get; set; }
         public DbSet<PieceTranslation> PieceTranslations { get; set; }
+        public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -108,9 +109,28 @@ namespace EgyptianMuseum.Infrastructure.Data
 
                 entity.HasIndex(e => new { e.UserId, e.TargetType, e.TargetId });
             });
-            
 
-        }
+            // PasswordResetOtp configuration
+            modelBuilder.Entity<PasswordResetOtp>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(6);
+                entity.Property(e => e.UserId).IsRequired();
+                entity.Property(e => e.ExpiryTime).IsRequired();
+                entity.Property(e => e.IsUsed).IsRequired();
+                entity.Property(e => e.CreatedAt).IsRequired();
+
+                entity.HasOne(e => e.User)
+                    .WithMany()
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => new { e.UserId, e.Code, e.IsUsed });
+            });
+
+
+}
     }
 }
 

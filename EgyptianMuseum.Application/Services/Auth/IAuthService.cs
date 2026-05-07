@@ -6,5 +6,8 @@ namespace EgyptianMuseum.Application.Services.Auth
     {
         Task<string> RegisterAsync(RegisterRequestDto dto);
         Task<AuthResponseDto> LoginAsync(LoginRequestDto dto);
+        Task ForgotPasswordAsync(ForgotPasswordRequestDto request);
+        Task<bool> VerifyOtpAsync(VerifyOtpRequestDto request);
+        Task ResetPasswordAsync(ResetPasswordRequestDto request);
     }
 }
