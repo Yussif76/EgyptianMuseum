@@ -49,15 +49,33 @@ namespace EgyptianMuseum.Infrastructure.Repositories
             _context.SaveChanges();
         }
 
-       
 
-        public async Task<List<Tour>> GetFilteredToursAsync(double estimatedTime, int rooms,string category)
+
+        public async Task<List<Tour>> GetFilteredToursAsync(int estimatedTime, int rooms, string category)
         {
+            if (string.IsNullOrEmpty(category))
+                throw new ArgumentException("Category is required");
+
             return await _context.Tours
-        .Include(t => t.RoomTours)
-        .ThenInclude(rt => rt.Room)
-        .Where(t => t.Category == category)
-        .ToListAsync();
+                  .Include(t => t.RoomTours)
+                  .ThenInclude(rt => rt.Room)
+                    .Where(t =>
+                        t.Category == category &&
+                        t.DurationInMinutes <= estimatedTime &&
+                        t.RoomTours.Count <= rooms
+                     )
+                  .OrderByDescending(t => t.RoomTours.Count)
+                  .ThenByDescending(t => t.DurationInMinutes)
+                  .ToListAsync();
+        }
+        public async Task AddAsync(Tour tour)
+        {
+            await _context.Tours.AddAsync(tour);
+            await _context.SaveChangesAsync();
         }
     }
 }
+
+     
+    
+ 

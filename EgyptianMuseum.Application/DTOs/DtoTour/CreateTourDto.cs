@@ -1,5 +1,4 @@
-﻿using EgyptianMuseum.Application.DTOs.DtoRoom;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,13 +6,11 @@ using System.Threading.Tasks;
 
 namespace EgyptianMuseum.Application.DTOs.DtoTour
 {
-    public class TourDto
+    public class CreateTourDto
     {
-        public int Id { get; set; }
-        public string Category { get; set; }
         public string Description { get; set; }
-
+        public string Category { get; set; }
         public int DurationInMinutes { get; set; }
-        public List<RoomTourDto> Rooms { get; set; } = new List<RoomTourDto>();
+        public List<int> RoomIds { get; set; } = new List<int>();
     }
 }

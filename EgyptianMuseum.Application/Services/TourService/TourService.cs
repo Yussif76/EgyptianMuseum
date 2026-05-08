@@ -19,38 +19,30 @@ namespace EgyptianMuseum.Application.Services.TourService
             _tourRepository = tourRepository;
         }
 
-        public async Task<List<TourDto>> GetAllToursAsync(double estimatedTime, int rooms, string category)
+        public async Task<List<TourDto>> GetAllToursAsync(int estimatedTime, int rooms, string category)
         {
 
 
 
             var tours = await _tourRepository.GetFilteredToursAsync(estimatedTime, rooms, category);
 
-            var rankedTours = tours
-                .Select(t => new
-                {
-                    Tour = t,
-                    TimeDiff = Math.Abs((t.EndTime - t.StartTime).TotalMinutes - estimatedTime * 60),
-                    RoomDiff = Math.Abs(t.RoomTours.Count - rooms)
-                })
-                .OrderBy(x => x.TimeDiff)
-                .ThenBy(x => x.RoomDiff)
-                .Select(x => x.Tour)
-                .ToList();
-
-            return rankedTours.Select(t => new TourDto
+            return tours.Select(t => new TourDto
             {
                 Id = t.Id,
                 Description = t.Description,
                 Category = t.Category,
-                StartTime = t.StartTime,
-                EndTime = t.EndTime,
-                Rooms = t.RoomTours.Select(rt => new RoomDto
+                DurationInMinutes = t.DurationInMinutes,
+                Rooms = t.RoomTours.Select(rt => new RoomTourDto
                 {
                     Id = rt.Room.Id,
                     Name = rt.Room.Name
+
                 }).ToList()
+
+
+
             }).ToList();
+        
         }
 
 
@@ -65,15 +57,16 @@ namespace EgyptianMuseum.Application.Services.TourService
                 Id = tour.Id,
                 Category = tour.Category,
                 Description = tour.Description,
-                StartTime = tour.StartTime,
-                EndTime = tour.EndTime,
-                Rooms = tour.RoomTours.Select(rt => new RoomDto
+               DurationInMinutes = tour.DurationInMinutes,
+                Rooms = tour.RoomTours.Select(rt => new RoomTourDto
                 {
                     Id = rt.Room.Id,
                     Name = rt.Room.Name
+                   
                 }).ToList()
             };
         }
+       
 
         public async Task<bool> StartTourAsync(int tourId, string userId)
         {
@@ -89,7 +82,7 @@ namespace EgyptianMuseum.Application.Services.TourService
             };
 
             await _tourRepository.AddUserTourAsync(userTour);
-            
+
             return true;
         }
 
@@ -99,8 +92,32 @@ namespace EgyptianMuseum.Application.Services.TourService
             if (userTour == null) return false;
 
             _tourRepository.DeleteUserTour(userTour);
-            
+
             return true;
+        }
+        public async Task<int> CreateTourAsync(CreateTourDto dto)
+        {
+            var tour = new Tour
+            {
+                Description = dto.Description,
+                Category = dto.Category,
+                DurationInMinutes= dto.DurationInMinutes,
+                RoomTours = new List<RoomTour>()
+            };
+
+            // 🔥 ربط الغرف
+            foreach (var roomId in dto.RoomIds)
+            {
+                tour.RoomTours.Add(new RoomTour
+                {
+                    RoomId = roomId
+                });
+            }
+
+            await _tourRepository.AddAsync(tour);
+           
+
+            return tour.Id;
         }
     }
 }

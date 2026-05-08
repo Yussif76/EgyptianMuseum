@@ -16,10 +16,8 @@ namespace EgyptianMuseum.Domain.Entities
         [MaxLength(500)]
         public string Description { get; set; }
         [Required]
-        public DateTime StartTime { get; set; }
+        public int DurationInMinutes { get; set; }
 
-        [Required]
-        public DateTime EndTime { get; set; }
         public string Category { get; set; }
 
 

@@ -1,4 +1,5 @@
-﻿using EgyptianMuseum.Application.Interfaces;
+﻿using EgyptianMuseum.Application.DTOs.DtoTour;
+using EgyptianMuseum.Application.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,7 @@ namespace EgyptianMuseum.API.Controllers
 
         [HttpGet]
         public async Task<IActionResult> GetAllTours(
-            [FromQuery] double estimatedTime,
+            [FromQuery] int estimatedTime,
             [FromQuery] int rooms,
             [FromQuery] string category)
         {
@@ -66,6 +67,18 @@ namespace EgyptianMuseum.API.Controllers
                 return NotFound(new { message = "Active tour not found." });
 
             return Ok(new { message = "Tour cancelled successfully." });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateTour([FromBody] CreateTourDto dto)
+        {
+            var id = await _tourService.CreateTourAsync(dto);
+
+            return Ok(new
+            {
+                message = "Tour created successfully",
+                tourId = id
+            });
         }
     }
 }

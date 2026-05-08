@@ -14,7 +14,7 @@ namespace EgyptianMuseum.Application.Interfaces
         Task<UserTour?> GetUserTourAsync(int tourId, string userId);
         Task AddUserTourAsync(UserTour userTour);
         void DeleteUserTour(UserTour userTour);
-        Task<List<Tour>> GetFilteredToursAsync(double estimatedTime, int rooms,string category);
-        
+        Task<List<Tour>> GetFilteredToursAsync(int estimatedTime, int rooms,string category);
+        Task AddAsync(Tour tour);
     }
 }
