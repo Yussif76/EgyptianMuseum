@@ -50,6 +50,27 @@ namespace EgyptianMuseum.API.Controllers
             }
         }
 
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh(
+    RefreshTokenRequestDto dto)
+        {
+            try
+            {
+                var result =
+                    await _authService.RefreshTokenAsync(dto);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    errors = new[] { ex.Message }
+                });
+            }
+        }
+
         //[Authorize]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("me")]

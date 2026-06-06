@@ -3,7 +3,7 @@ using EgyptianMuseum.Application.Services.Auth;
 using EgyptianMuseum.Application.Services.Chat;
 using EgyptianMuseum.Application.Services.Feedback;
 using EgyptianMuseum.Application.Services.NotifictionsService;
-using EgyptianMuseum.Application.Services.RoomServices;
+
 using EgyptianMuseum.Application.Services.ScannedArtifacts;
 using EgyptianMuseum.Application.Services.TourService;
 using EgyptianMuseum.Domain.Entities;
@@ -110,8 +110,9 @@ namespace EgyptianMuseum.API
             builder.Services.AddScoped<ITourService, TourService>();
 
             // Register Room services and repositories
-            builder.Services.AddScoped<IRoomRepository, RoomRepository>();
-            builder.Services.AddScoped<IRoomService, RoomService>();
+           
+
+            builder.Services.AddScoped<IRefreshTokenRepository,RefreshTokenRepository>();
 
 
 

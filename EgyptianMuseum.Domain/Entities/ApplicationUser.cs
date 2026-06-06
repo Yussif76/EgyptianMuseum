@@ -12,5 +12,8 @@ namespace EgyptianMuseum.Domain.Entities
         public string? Name { get; set; }
         public string PreferredLanguage { get; set; } = "en";
         public ICollection<UserNotification> UserNotifications { get; set; } = new List<UserNotification>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; }
+    = new List<RefreshToken>();
+
     }
 }

@@ -1,6 +1,8 @@
 using EgyptianMuseum.Application.DTOs.Auth;
+using EgyptianMuseum.Application.Interfaces;
 using EgyptianMuseum.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,15 +16,18 @@ namespace EgyptianMuseum.Application.Services.Auth
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IConfiguration _configuration;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            IRefreshTokenRepository refreshTokenRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _configuration = configuration;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         public async Task<string> RegisterAsync(RegisterRequestDto dto)
@@ -72,15 +77,61 @@ namespace EgyptianMuseum.Application.Services.Auth
             }
 
             var token = GenerateJwtToken(user);
+            var refreshToken = GenerateRefreshToken();
+
+            refreshToken.UserId = user.Id;
+
+            await _refreshTokenRepository.AddAsync(refreshToken);
 
             return new AuthResponseDto
             {
                 Token = token,
+                RefreshToken = refreshToken.Token,
                 UserId = user.Id,
                 Email = user.Email,
                 Name = user.Name
             };
         }
+
+        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenRequestDto dto)
+        {
+            var storedToken =
+                await _refreshTokenRepository
+                    .GetByTokenAsync(dto.RefreshToken);
+
+            if (storedToken == null)
+                throw new InvalidOperationException("Invalid token");
+
+            if (!storedToken.IsActive)
+                throw new InvalidOperationException("Token expired");
+
+            storedToken.Revoked = DateTime.UtcNow;
+
+            await _refreshTokenRepository.UpdateAsync(storedToken);
+
+            var newRefreshToken = GenerateRefreshToken();
+
+            newRefreshToken.UserId = storedToken.UserId;
+
+            await _refreshTokenRepository.AddAsync(newRefreshToken);
+
+            var accessToken =
+                GenerateJwtToken(storedToken.User);
+
+            return new AuthResponseDto
+            {
+                Token= accessToken,
+                RefreshToken = newRefreshToken.Token,
+                UserId = storedToken.User.Id,
+                Email = storedToken.User.Email,
+                Name = storedToken.User.Name
+            };
+        }
+
+
+
+
+
 
         private string GenerateJwtToken(ApplicationUser user)
         {
@@ -126,5 +177,25 @@ namespace EgyptianMuseum.Application.Services.Auth
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        private RefreshToken GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = System.Security.Cryptography.RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return new RefreshToken
+                {
+                    Token = Convert.ToBase64String(randomNumber),
+                    Expires = DateTime.UtcNow.AddDays(7),
+                    Created = DateTime.UtcNow
+                };
+
+            }
+        }
     }
+    
+
+
+    
 }
