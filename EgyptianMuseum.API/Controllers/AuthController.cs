@@ -140,5 +140,59 @@ namespace EgyptianMuseum.API.Controllers
                 return BadRequest(new { success = false, message = ex.Message });
             }
         }
+
+        /// <summary>
+        /// Updates the display name of the authenticated user.
+        /// </summary>
+        /// <param name="request">The request containing the new display name.</param>
+        /// <returns>
+        /// 200 OK if display name changed successfully.
+        /// 400 Bad Request if validation fails.
+        /// 401 Unauthorized if user is not authenticated.
+        /// </returns>
+        /// <remarks>
+        /// This endpoint updates only the user's display name (Name field).
+        /// It does NOT modify username, email, or password.
+        /// </remarks>
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("change-username")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> ChangeUserName([FromBody] ChangeUserNameRequestDto request)
+        {
+            try
+            {
+                // Get the current user ID from JWT claims
+                var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return Unauthorized(new { success = false, message = "User ID not found in token" });
+                }
+
+                // Validate request
+                if (request == null)
+                {
+                    return BadRequest(new { success = false, message = "Request cannot be empty" });
+                }
+
+                // Call the service
+                await _authService.ChangeUserNameAsync(userId, request);
+
+                return Ok(new { success = true, message = "Display name updated successfully" });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = $"An error occurred: {ex.Message}" });
+            }
+        }
     }
 }

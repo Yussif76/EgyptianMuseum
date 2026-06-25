@@ -44,13 +44,8 @@ namespace EgyptianMuseum.Application.Services.Maps
             var path = new IndoorMapPath
             {
                 MapId = request.MapId,
-                FromRoom = request.FromRoom,
-                ToRoom = request.ToRoom,
-                FromX = request.FromX,
-                FromY = request.FromY,
-                ToX = request.ToX,
-                ToY = request.ToY,
-                Distance = request.Distance
+                FromRoomId = request.FromRoomId,
+                ToRoomId = request.ToRoomId
             };
 
             await _pathRepository.AddAsync(path, cancellationToken);
@@ -67,13 +62,8 @@ namespace EgyptianMuseum.Application.Services.Maps
                 throw new KeyNotFoundException($"Path with ID {id} not found");
             }
 
-            path.FromRoom = request.FromRoom;
-            path.ToRoom = request.ToRoom;
-            path.FromX = request.FromX;
-            path.FromY = request.FromY;
-            path.ToX = request.ToX;
-            path.ToY = request.ToY;
-            path.Distance = request.Distance;
+            path.FromRoomId = request.FromRoomId;
+            path.ToRoomId = request.ToRoomId;
 
             await _pathRepository.UpdateAsync(path, cancellationToken);
             return PathToResponseDto(path);
@@ -97,49 +87,37 @@ namespace EgyptianMuseum.Application.Services.Maps
                 throw new ArgumentException("MapId must be greater than 0");
             }
 
-            if (string.IsNullOrWhiteSpace(request.FromRoom))
+            if (request.FromRoomId <= 0)
             {
-                throw new ArgumentException("FromRoom is required");
+                throw new ArgumentException("FromRoomId must be greater than 0");
             }
 
-            if (string.IsNullOrWhiteSpace(request.ToRoom))
+            if (request.ToRoomId <= 0)
             {
-                throw new ArgumentException("ToRoom is required");
+                throw new ArgumentException("ToRoomId must be greater than 0");
             }
 
-            if (request.Distance <= 0)
+            if (request.FromRoomId == request.ToRoomId)
             {
-                throw new ArgumentException("Distance must be greater than 0");
-            }
-
-            if (double.IsNaN(request.FromX) || double.IsNaN(request.FromY) ||
-                double.IsNaN(request.ToX) || double.IsNaN(request.ToY))
-            {
-                throw new ArgumentException("Coordinates must be valid numbers");
+                throw new ArgumentException("FromRoomId and ToRoomId must be different");
             }
         }
 
         private void ValidatePathRequest(UpdateIndoorMapPathRequestDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.FromRoom))
+            if (request.FromRoomId <= 0)
             {
-                throw new ArgumentException("FromRoom is required");
+                throw new ArgumentException("FromRoomId must be greater than 0");
             }
 
-            if (string.IsNullOrWhiteSpace(request.ToRoom))
+            if (request.ToRoomId <= 0)
             {
-                throw new ArgumentException("ToRoom is required");
+                throw new ArgumentException("ToRoomId must be greater than 0");
             }
 
-            if (request.Distance <= 0)
+            if (request.FromRoomId == request.ToRoomId)
             {
-                throw new ArgumentException("Distance must be greater than 0");
-            }
-
-            if (double.IsNaN(request.FromX) || double.IsNaN(request.FromY) ||
-                double.IsNaN(request.ToX) || double.IsNaN(request.ToY))
-            {
-                throw new ArgumentException("Coordinates must be valid numbers");
+                throw new ArgumentException("FromRoomId and ToRoomId must be different");
             }
         }
 
@@ -149,13 +127,8 @@ namespace EgyptianMuseum.Application.Services.Maps
             {
                 Id = path.Id,
                 MapId = path.MapId,
-                FromRoom = path.FromRoom,
-                ToRoom = path.ToRoom,
-                FromX = path.FromX,
-                FromY = path.FromY,
-                ToX = path.ToX,
-                ToY = path.ToY,
-                Distance = path.Distance
+                FromRoomId = path.FromRoomId,
+                ToRoomId = path.ToRoomId
             };
         }
     }

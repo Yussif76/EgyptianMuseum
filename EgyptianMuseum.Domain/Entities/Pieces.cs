@@ -11,6 +11,8 @@ namespace EgyptianMuseum.Domain.Entities
         public string Code { get; set; }
         public string Name { get; set; }
         public string PhotoPath { get; set; }
+        public int? RoomId { get; set; }
+        public Room Room { get; set; }
         public ICollection<PieceTranslation> Translations { get; set; } = new List<PieceTranslation>();
         public ICollection<ScannedArtifact> ScannedArtifacts { get; set; } = new List<ScannedArtifact>();
 

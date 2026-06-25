@@ -16,13 +16,25 @@ namespace EgyptianMuseum.Application.Services.Maps
         public async Task<List<MapResponseDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var maps = await _mapRepository.GetAllAsync(cancellationToken);
-            return maps.Select(m => MapToResponseDto(m)).ToList();
+            return maps.Select(m => MapToResponseDto(m, "en")).ToList();
+        }
+
+        public async Task<List<MapResponseDto>> GetAllAsync(string lang, CancellationToken cancellationToken = default)
+        {
+            var maps = await _mapRepository.GetAllAsync(cancellationToken);
+            return maps.Select(m => MapToResponseDto(m, lang)).ToList();
         }
 
         public async Task<MapResponseDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             var map = await _mapRepository.GetByIdAsync(id, cancellationToken);
-            return map != null ? MapToResponseDto(map) : null;
+            return map != null ? MapToResponseDto(map, "en") : null;
+        }
+
+        public async Task<MapResponseDto?> GetByIdAsync(int id, string lang, CancellationToken cancellationToken = default)
+        {
+            var map = await _mapRepository.GetByIdAsync(id, cancellationToken);
+            return map != null ? MapToResponseDto(map, lang) : null;
         }
 
         public async Task<List<MapResponseDto>> GetByZoneAsync(string zone, CancellationToken cancellationToken = default)
@@ -33,7 +45,18 @@ namespace EgyptianMuseum.Application.Services.Maps
             }
 
             var maps = await _mapRepository.GetByZoneAsync(zone, cancellationToken);
-            return maps.Select(m => MapToResponseDto(m)).ToList();
+            return maps.Select(m => MapToResponseDto(m, "en")).ToList();
+        }
+
+        public async Task<List<MapResponseDto>> GetByZoneAsync(string zone, string lang, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(zone))
+            {
+                throw new ArgumentException("Zone cannot be empty");
+            }
+
+            var maps = await _mapRepository.GetByZoneAsync(zone, cancellationToken);
+            return maps.Select(m => MapToResponseDto(m, lang)).ToList();
         }
 
         public async Task<MapResponseDto> CreateAsync(CreateMapRequestDto request, CancellationToken cancellationToken = default)
@@ -44,11 +67,24 @@ namespace EgyptianMuseum.Application.Services.Maps
             {
                 Name = request.Name,
                 Zone = request.Zone,
-                ImageUrl = request.ImageUrl
+                ImageUrl = request.ImageUrl,
+                Height = request.Height,
+                Width = request.Width
             };
 
+            // Add translations if provided
+            if (request.Translations != null && request.Translations.Any())
+            {
+                map.Translations = request.Translations.Select(t => new MapTranslation
+                {
+                    LanguageCode = t.LanguageCode,
+                    Name = t.Name,
+                    ZoneName = t.ZoneName
+                }).ToList();
+            }
+
             await _mapRepository.AddAsync(map, cancellationToken);
-            return MapToResponseDto(map);
+            return MapToResponseDto(map, "en");
         }
 
         public async Task<MapResponseDto> UpdateAsync(int id, UpdateMapRequestDto request, CancellationToken cancellationToken = default)
@@ -64,9 +100,26 @@ namespace EgyptianMuseum.Application.Services.Maps
             map.Name = request.Name;
             map.Zone = request.Zone;
             map.ImageUrl = request.ImageUrl;
+            map.Height = request.Height;
+            map.Width = request.Width;
+
+            // Update translations if provided
+            if (request.Translations != null && request.Translations.Any())
+            {
+                // Clear existing translations
+                map.Translations.Clear();
+
+                // Add new translations
+                map.Translations = request.Translations.Select(t => new MapTranslation
+                {
+                    LanguageCode = t.LanguageCode,
+                    Name = t.Name,
+                    ZoneName = t.ZoneName
+                }).ToList();
+            }
 
             await _mapRepository.UpdateAsync(map, cancellationToken);
-            return MapToResponseDto(map);
+            return MapToResponseDto(map, "en");
         }
 
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
@@ -116,14 +169,21 @@ namespace EgyptianMuseum.Application.Services.Maps
             }
         }
 
-        private MapResponseDto MapToResponseDto(Map map)
+        private MapResponseDto MapToResponseDto(Map map, string lang = "en")
         {
+            // Select translation based on language, fallback to first translation if not found
+            var translation = map.Translations
+                .FirstOrDefault(x => x.LanguageCode == lang)
+                ?? map.Translations.FirstOrDefault();
+
             return new MapResponseDto
             {
                 Id = map.Id,
-                Name = map.Name,
-                Zone = map.Zone,
-                ImageUrl = map.ImageUrl
+                Name = translation?.Name ?? map.Name,
+                Zone = translation?.ZoneName ?? map.Zone,
+                ImageUrl = map.ImageUrl,
+                Height = map.Height,
+                Width = map.Width
             };
         }
     }

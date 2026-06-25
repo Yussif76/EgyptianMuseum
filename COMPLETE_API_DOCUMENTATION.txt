@@ -1,0 +1,1722 @@
+================================================================================
+EGYPTIAN MUSEUM API - COMPLETE DOCUMENTATION
+================================================================================
+
+PROJECT NAME: Egyptian Museum (MuseWay)
+TECHNOLOGY: .NET 8, C#, SQL Server, Clean Architecture
+VERSION: 2.0
+STATUS: PRODUCTION READY
+DATE: June 2026
+
+================================================================================
+1. EXECUTIVE SUMMARY
+================================================================================
+
+This is a professional, production-ready backend API for an Egyptian Museum 
+management system.
+
+WHAT IT DOES:
+✓ User authentication (register, login, profile management)
+✓ Browse and scan ancient artifacts
+✓ Find shortest paths between rooms (Dijkstra's algorithm)
+✓ Create and manage guided tours
+✓ AI chat about artifacts
+✓ Feedback and rating system
+✓ Multi-language support (English & Arabic)
+
+SECURITY:
+✓ JWT authentication
+✓ Password hashing
+✓ Input validation
+✓ SQL injection prevention
+✓ CORS enabled
+
+================================================================================
+2. ARCHITECTURE OVERVIEW
+================================================================================
+
+LAYERED ARCHITECTURE:
+
+API Layer (Controllers)
+	↓ What users see
+Application Layer (Services & DTOs)
+	↓ Business logic
+Domain Layer (Entities)
+	↓ Core models
+Infrastructure Layer (Database)
+	↓ Data storage
+SQL Server Database
+
+PROJECT STRUCTURE:
+
+EgyptianMuseum/
+├── EgyptianMuseum.Domain/
+│   ├── Entities/
+│   │   ├── ApplicationUser.cs
+│   │   ├── Room.cs
+│   │   ├── Map.cs
+│   │   ├── Pieces.cs
+│   │   ├── Tour.cs
+│   │   ├── IndoorMapPath.cs
+│   │   ├── ChatConversation.cs
+│   │   └── Feedback.cs
+│   └── Enums/
+├── EgyptianMuseum.Application/
+│   ├── Services/
+│   │   ├── Auth/AuthService.cs
+│   │   ├── Navigation/NavigationService.cs
+│   │   ├── Maps/MapService.cs
+│   │   ├── Rooms/RoomService.cs
+│   │   ├── Tours/TourService.cs
+│   │   ├── Pieces/PiecesService.cs
+│   │   ├── Chat/ChatService.cs
+│   │   └── Feedback/FeedbackService.cs
+│   ├── Interfaces/
+│   └── DTOs/
+├── EgyptianMuseum.Infrastructure/
+│   ├── Data/AppDbContext.cs
+│   ├── Migrations/
+│   └── Repositories/
+└── EgyptianMuseum.API/
+	├── Controllers/
+	│   ├── AuthController.cs
+	│   ├── NavigationController.cs
+	│   ├── MapsController.cs
+	│   ├── RoomsController.cs
+	│   ├── ToursController.cs
+	│   ├── PiecesController.cs
+	│   ├── ChatController.cs
+	│   ├── FeedbackController.cs
+	│   └── IndoorMapPathsController.cs
+	└── Program.cs
+
+================================================================================
+3. DATABASE SCHEMA
+================================================================================
+
+USERS TABLE:
+- Id (Primary Key)
+- Email (Unique)
+- Password (Hashed)
+- UserName
+- Name (Display Name - Can be changed)
+- PreferredLanguage (en/ar)
+- CreatedAt
+- IsDeleted
+
+MAPS TABLE:
+- Id (Primary Key)
+- Name
+- Zone
+- ImageUrl
+- CreatedAt
+- IsDeleted
+
+ROOMS TABLE:
+- Id (Primary Key)
+- Name
+- Description
+- MapId (Foreign Key)
+- XCoord (X Coordinate)
+- YCoord (Y Coordinate)
+- CreatedAt
+- IsDeleted
+
+INDOOR_MAP_PATHS TABLE (Graph Edges):
+- Id (Primary Key)
+- MapId (Foreign Key)
+- FromRoomId (Foreign Key)
+- ToRoomId (Foreign Key)
+- CreatedAt
+- IsDeleted
+NOTE: Distance calculated from coordinates, NOT stored
+
+PIECES TABLE (Artifacts):
+- Id (Primary Key)
+- Code (Unique Barcode)
+- Name
+- PhotoPath
+- RoomId (Foreign Key)
+- CreatedAt
+- IsDeleted
+- Translations (English/Arabic)
+
+TOURS TABLE:
+- Id (Primary Key)
+- Name
+- Description
+- DurationMinutes
+- Category
+- CreatedAt
+- IsDeleted
+
+TOUR_ROOMS (Junction Table):
+- TourId (Foreign Key)
+- RoomId (Foreign Key)
+- Order
+- Primary Key: (TourId, RoomId)
+
+CHAT_CONVERSATIONS TABLE:
+- Id (Primary Key)
+- UserId (Foreign Key)
+- Type (General/Artifact)
+- Title
+- ArtifactId (Foreign Key, nullable)
+- CreatedAt
+- IsDeleted
+
+CHAT_MESSAGES TABLE:
+- Id (Primary Key)
+- ConversationId (Foreign Key)
+- SenderType (User/AI)
+- Message
+- CreatedAt
+
+FEEDBACK TABLE:
+- Id (Primary Key)
+- UserId (Foreign Key)
+- TargetType (App/Artifact/Chat)
+- TargetId
+- Rating (1-5)
+- Comment
+- CreatedAt
+- IsDeleted
+
+================================================================================
+4. COMPLETE API ENDPOINTS
+================================================================================
+
+PREFIX: http://localhost:5000/api
+
+---
+AUTHENTICATION ENDPOINTS: /api/auth
+---
+
+POST /register
+Description: Create new user account
+Auth Required: NO
+Request Body:
+{
+  "email": "user@example.com",
+  "password": "SecurePass123",
+  "name": "John Doe",
+  "language": "en"
+}
+Response: 
+{
+  "success": true,
+  "message": "User registered successfully",
+  "userId": "12345"
+}
+Status Codes: 200 (Success), 400 (Invalid), 500 (Error)
+
+---
+
+POST /login
+Description: Authenticate user and get JWT token
+Auth Required: NO
+Request Body:
+{
+  "email": "user@example.com",
+  "password": "SecurePass123"
+}
+Response:
+{
+  "success": true,
+  "data": {
+	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+	"userId": "12345",
+	"email": "user@example.com",
+	"name": "John Doe"
+  }
+}
+Status Codes: 200 (Success), 401 (Invalid), 400 (Bad Request)
+
+---
+
+GET /me
+Description: Get current user profile
+Auth Required: YES (Bearer Token)
+Headers:
+Authorization: Bearer YOUR_JWT_TOKEN
+Response:
+{
+  "userId": "12345",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "language": "en"
+}
+Status Codes: 200 (Success), 401 (Unauthorized)
+
+---
+
+PUT /change-username
+Description: Update user display name
+Auth Required: YES (Bearer Token)
+NEW IN VERSION 2.0
+Headers:
+Authorization: Bearer YOUR_JWT_TOKEN
+Request Body:
+{
+  "newUserName": "Ahmed Yussif"
+}
+Response:
+{
+  "success": true,
+  "message": "Display name updated successfully"
+}
+Validation:
+- Display name cannot be empty
+- Display name must be 3-100 characters
+- Only updates Name field, not UserName
+Status Codes: 200 (Success), 400 (Invalid), 401 (Unauthorized)
+
+---
+
+POST /forgot-password
+Description: Request password reset OTP
+Auth Required: NO
+Request Body:
+{
+  "email": "user@example.com"
+}
+Response:
+{
+  "success": true,
+  "message": "If an account with this email exists, an OTP will be sent"
+}
+Note: Sends OTP via email
+Status Codes: 200 (Success), 400 (Error)
+
+---
+
+POST /verify-otp
+Description: Verify OTP for password reset
+Auth Required: NO
+Request Body:
+{
+  "email": "user@example.com",
+  "otp": "123456"
+}
+Response:
+{
+  "success": true,
+  "message": "OTP verified successfully"
+}
+Status Codes: 200 (Success), 400 (Invalid)
+
+---
+
+POST /reset-password
+Description: Reset password using OTP
+Auth Required: NO
+Request Body:
+{
+  "email": "user@example.com",
+  "otp": "123456",
+  "newPassword": "NewSecurePass456"
+}
+Response:
+{
+  "success": true,
+  "message": "Password has been reset successfully"
+}
+Status Codes: 200 (Success), 400 (Invalid)
+
+---
+NAVIGATION ENDPOINTS: /api/navigation
+---
+
+POST /shortest-path
+Description: Calculate shortest path between two rooms
+Auth Required: NO
+NEW IN VERSION 2.0
+Algorithm: Dijkstra's Algorithm
+Request Body:
+{
+  "fromRoomId": 1,
+  "toRoomId": 7
+}
+Response:
+{
+  "success": true,
+  "path": [
+	{
+	  "roomId": 1,
+	  "name": "Entrance Hall",
+	  "x": 100,
+	  "y": 200
+	},
+	{
+	  "roomId": 3,
+	  "name": "Ancient Egypt Hall",
+	  "x": 250,
+	  "y": 300
+	},
+	{
+	  "roomId": 7,
+	  "name": "Statue Room",
+	  "x": 500,
+	  "y": 600
+	}
+  ],
+  "totalDistance": 120.5
+}
+Validation:
+- fromRoomId must be > 0
+- toRoomId must be > 0
+- Both rooms must exist
+- Both rooms must be in same map
+- Path must exist between rooms
+Status Codes: 200 (Success), 400 (Invalid), 404 (Not Found)
+
+---
+MAP ENDPOINTS: /api/maps
+---
+
+GET /
+Description: Get all maps
+Auth Required: NO
+Query Parameters: None
+Response:
+{
+  "success": true,
+  "data": [
+	{
+	  "id": 1,
+	  "name": "First Floor",
+	  "zone": "Main Hall",
+	  "imageUrl": "https://..."
+	}
+  ]
+}
+Status Codes: 200 (Success)
+
+---
+
+GET /{id}
+Description: Get specific map by ID
+Auth Required: NO
+URL Parameter: id (integer)
+Response:
+{
+  "success": true,
+  "data": {
+	"id": 1,
+	"name": "First Floor",
+	"zone": "Main Hall",
+	"imageUrl": "https://..."
+  }
+}
+Status Codes: 200 (Success), 400 (Invalid ID), 404 (Not Found)
+
+---
+
+GET /zone/{zone}
+Description: Get maps by zone
+Auth Required: NO
+URL Parameter: zone (string)
+Response:
+{
+  "success": true,
+  "data": [...]
+}
+Status Codes: 200 (Success), 400 (Invalid)
+
+---
+
+POST /
+Description: Create new map
+Auth Required: YES (Admin)
+Request Body:
+{
+  "name": "Second Floor",
+  "zone": "East Wing",
+  "imageUrl": "https://..."
+}
+Response:
+{
+  "success": true,
+  "data": {
+	"id": 2,
+	"name": "Second Floor",
+	...
+  }
+}
+Status Codes: 201 (Created), 400 (Invalid), 401 (Unauthorized)
+
+---
+
+PUT /{id}
+Description: Update map
+Auth Required: YES (Admin)
+Request Body: Same as POST
+Response: Same as POST
+Status Codes: 200 (Success), 400 (Invalid), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+DELETE /{id}
+Description: Delete map
+Auth Required: YES (Admin)
+Response:
+{
+  "success": true,
+  "message": "Map deleted successfully"
+}
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not Found)
+
+---
+ROOM ENDPOINTS: /api/rooms
+---
+
+GET /
+Description: Get all rooms
+Auth Required: NO
+Response:
+{
+  "success": true,
+  "data": [...],
+  "count": 15
+}
+Status Codes: 200 (Success)
+
+---
+
+GET /{id}
+Description: Get room details
+Auth Required: YES
+Response:
+{
+  "success": true,
+  "data": {
+	"id": 1,
+	"name": "Entrance Hall",
+	"description": "Main entrance",
+	"mapId": 1,
+	"xCoord": 100,
+	"yCoord": 200
+  }
+}
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+GET /map/{mapId}
+Description: Get all rooms in specific map
+Auth Required: NO
+Response:
+{
+  "success": true,
+  "data": [...],
+  "count": 5
+}
+Status Codes: 200 (Success), 400 (Invalid)
+
+---
+
+POST /
+Description: Create room
+Auth Required: YES (Admin)
+Request Body:
+{
+  "name": "Pharaoh Chamber",
+  "description": "Ancient burial chamber",
+  "mapId": 1,
+  "xCoord": 150,
+  "yCoord": 250
+}
+Response: Room object with ID
+Status Codes: 201 (Created), 400 (Invalid), 401 (Unauthorized)
+
+---
+
+PUT /{id}
+Description: Update room
+Auth Required: YES (Admin)
+Request Body: Same as POST
+Status Codes: 200 (Success), 400 (Invalid), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+DELETE /{id}
+Description: Delete room
+Auth Required: YES (Admin)
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not Found)
+
+---
+INDOOR MAP PATHS ENDPOINTS: /api/indoor-map-paths
+---
+
+GET /
+Description: Get all paths
+Auth Required: NO
+Response:
+{
+  "success": true,
+  "data": [
+	{
+	  "id": 1,
+	  "mapId": 1,
+	  "fromRoomId": 1,
+	  "toRoomId": 2
+	}
+  ]
+}
+Status Codes: 200 (Success)
+
+---
+
+GET /{id}
+Description: Get specific path
+Auth Required: NO
+Status Codes: 200 (Success), 404 (Not Found)
+
+---
+
+GET /map/{mapId}
+Description: Get all paths in map
+Auth Required: NO
+Status Codes: 200 (Success), 400 (Invalid)
+
+---
+
+POST /
+Description: Create path connection
+Auth Required: YES (Admin)
+Request Body:
+{
+  "mapId": 1,
+  "fromRoomId": 1,
+  "toRoomId": 2
+}
+Response: Path object with ID
+Note: Creates bidirectional path (1→2 and 2→1)
+Status Codes: 201 (Created), 400 (Invalid), 401 (Unauthorized)
+
+---
+
+PUT /{id}
+Description: Update path
+Auth Required: YES (Admin)
+Request Body: Same as POST
+Status Codes: 200 (Success), 400 (Invalid), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+DELETE /{id}
+Description: Delete path
+Auth Required: YES (Admin)
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not Found)
+
+---
+PIECES/ARTIFACTS ENDPOINTS: /api/pieces
+---
+
+GET /
+Description: Get all artifacts (paginated)
+Auth Required: NO
+Query Parameters:
+- page: Page number (default: 1)
+- pageSize: Items per page (default: 12)
+- lang: Language code (en/ar)
+Response:
+{
+  "success": true,
+  "data": [
+	{
+	  "id": 1,
+	  "code": "SCARAB001",
+	  "name": "Scarab Amulet",
+	  "photoPath": "path/to/image.jpg",
+	  "textNarration": "...",
+	  "period": "New Kingdom",
+	  "category": "Jewelry"
+	}
+  ]
+}
+Status Codes: 200 (Success), 404 (No data)
+
+---
+
+GET /{id}
+Description: Get artifact details
+Auth Required: YES
+Query Parameters:
+- lang: Language code (en/ar, default: en)
+Response:
+{
+  "success": true,
+  "data": {
+	"id": 1,
+	"code": "SCARAB001",
+	"name": "Scarab Amulet",
+	"photoPath": "...",
+	"textNarration": "...",
+	"period": "...",
+	"category": "...",
+	"isFavorite": false,
+	"scannedArtifactId": null,
+	"scannedAt": null
+  }
+}
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+GET /GetByCode/{code}
+Description: Get artifact by barcode (for scanning)
+Auth Required: YES
+URL Parameter: code (string)
+Query Parameters:
+- lang: Language code (en/ar)
+Response: Same as GET /{id}
+Includes: Scan status, favorite status
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+POST /
+Description: Create new artifact
+Auth Required: YES (Admin)
+Request Body:
+{
+  "code": "NEW001",
+  "name": "New Artifact",
+  "photoPath": "path/to/photo.jpg",
+  "roomId": 1
+}
+Response: Created artifact object
+Status Codes: 201 (Created), 400 (Invalid), 401 (Unauthorized)
+
+---
+
+PUT /{id}
+Description: Update artifact
+Auth Required: YES (Admin)
+Request Body: Same as POST
+Status Codes: 200 (Success), 400 (Invalid), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+DELETE /{id}
+Description: Delete artifact
+Auth Required: YES (Admin)
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not Found)
+
+---
+TOURS ENDPOINTS: /api/tours
+---
+
+GET /
+Description: Get all tours
+Auth Required: NO
+Response:
+{
+  "success": true,
+  "data": [
+	{
+	  "id": 1,
+	  "name": "Ancient Wonders Tour",
+	  "description": "...",
+	  "durationMinutes": 90,
+	  "category": "History"
+	}
+  ],
+  "count": 5
+}
+Status Codes: 200 (Success)
+
+---
+
+GET /{id}
+Description: Get tour details
+Auth Required: NO
+Response:
+{
+  "success": true,
+  "data": {
+	"id": 1,
+	"name": "Ancient Wonders Tour",
+	"description": "...",
+	"durationMinutes": 90,
+	"category": "History",
+	"rooms": [
+	  { "roomId": 1, "name": "Entrance", "order": 1 },
+	  { "roomId": 3, "name": "Ancient Egypt", "order": 2 }
+	]
+  }
+}
+Status Codes: 200 (Success), 404 (Not Found)
+
+---
+
+GET /recommend
+Description: Recommend tours by filters
+Auth Required: NO
+Query Parameters:
+- category: Tour category (optional)
+- durationMinutes: Tour duration (optional)
+- numberOfRooms: Number of rooms (optional)
+Note: At least one filter required
+Response: List of recommended tours
+Status Codes: 200 (Success), 400 (No filters)
+
+---
+
+POST /
+Description: Create tour
+Auth Required: YES (Admin)
+Request Body:
+{
+  "name": "New Tour",
+  "description": "...",
+  "durationMinutes": 120,
+  "category": "History"
+}
+Response: Created tour object
+Status Codes: 201 (Created), 400 (Invalid), 401 (Unauthorized)
+
+---
+
+PUT /{id}
+Description: Update tour
+Auth Required: YES (Admin)
+Request Body: Same as POST
+Status Codes: 200 (Success), 400 (Invalid), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+DELETE /{id}
+Description: Delete tour
+Auth Required: YES (Admin)
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+POST /{tourId}/rooms
+Description: Add room to tour
+Auth Required: YES (Admin)
+Request Body:
+{
+  "roomId": 1,
+  "order": 1
+}
+Response: Updated tour object
+Status Codes: 201 (Created), 400 (Invalid), 401 (Unauthorized), 404 (Not Found)
+
+---
+
+DELETE /{tourId}/rooms/{roomId}
+Description: Remove room from tour
+Auth Required: YES (Admin)
+Response: Updated tour object
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not Found)
+
+---
+CHAT ENDPOINTS: /api/chat (All require JWT authentication)
+---
+
+POST /general
+Description: Start general museum chat
+Auth Required: YES
+Response:
+{
+  "success": true,
+  "data": {
+	"conversationId": 1,
+	"title": "General Chat"
+  }
+}
+Status Codes: 201 (Created), 401 (Unauthorized)
+
+---
+
+POST /artifact
+Description: Start artifact-specific chat
+Auth Required: YES
+Request Body:
+{
+  "artifactId": 1
+}
+Response:
+{
+  "success": true,
+  "data": {
+	"conversationId": 2,
+	"artifactId": 1
+  }
+}
+Status Codes: 200 (Existing) or 201 (New), 401 (Unauthorized), 404 (Artifact not found)
+
+---
+
+POST /{conversationId}/messages
+Description: Send message in chat
+Auth Required: YES
+Request Body:
+{
+  "message": "Tell me about this artifact"
+}
+Response:
+{
+  "success": true,
+  "data": {
+	"message": "AI response text...",
+	"timestamp": "2026-06-04T10:30:00Z"
+  }
+}
+Status Codes: 200 (Success), 401 (Unauthorized), 403 (Not your chat), 404 (Not found)
+
+---
+
+GET /{conversationId}/messages
+Description: Get chat history
+Auth Required: YES
+Response:
+{
+  "success": true,
+  "data": {
+	"conversationId": 1,
+	"messages": [
+	  { "senderType": "User", "message": "...", "timestamp": "..." },
+	  { "senderType": "AI", "message": "...", "timestamp": "..." }
+	]
+  }
+}
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not found)
+
+---
+
+PUT /{conversationId}/title
+Description: Update chat title
+Auth Required: YES
+Request Body:
+{
+  "newTitle": "My Egyptian Journey"
+}
+Response:
+{
+  "success": true,
+  "data": { "conversationId": 1, "title": "My Egyptian Journey" }
+}
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not found)
+
+---
+
+DELETE /{conversationId}
+Description: Delete chat conversation
+Auth Required: YES
+Response:
+{
+  "success": true,
+  "message": "Conversation deleted successfully"
+}
+Status Codes: 200 (Success), 401 (Unauthorized), 404 (Not found)
+
+---
+FEEDBACK ENDPOINTS: /api/feedback (All require JWT authentication)
+---
+
+POST /
+Description: Submit feedback/rating
+Auth Required: YES
+Request Body:
+{
+  "targetType": "App",  // App, Artifact, or Chat
+  "targetId": 1,        // Required for Artifact/Chat
+  "rating": 5,          // 1-5 stars
+  "comment": "Great app!"
+}
+Response:
+{
+  "success": true,
+  "message": "Feedback created successfully",
+  "data": {
+	"id": 1,
+	"targetType": "App",
+	"rating": 5,
+	"comment": "Great app!"
+  }
+}
+Status Codes: 201 (Created), 400 (Invalid), 401 (Unauthorized), 404 (Target not found)
+
+---
+
+GET /
+Description: Get user's feedback
+Auth Required: YES (or optional)
+Response:
+{
+  "success": true,
+  "message": "User feedback retrieved successfully",
+  "data": [...]
+}
+Status Codes: 200 (Success), 400 (Error)
+
+---
+
+GET /target/{targetType}
+Description: Get feedback by target
+Auth Required: Optional
+Query Parameters:
+- targetId: Specific target ID (for Artifact/Chat)
+Example: GET /target/Artifact?targetId=1
+Response:
+{
+  "success": true,
+  "data": [...]
+}
+Status Codes: 200 (Success), 400 (Invalid)
+
+================================================================================
+5. AUTHENTICATION & SECURITY
+================================================================================
+
+JWT TOKEN FLOW:
+
+1. User sends email + password to POST /auth/login
+2. Server validates credentials
+3. Server creates JWT token
+4. Server sends token back to user
+5. User stores token in app/browser
+6. User includes token in Authorization header: "Bearer TOKEN"
+7. Server validates token on every request
+8. If valid: Access granted ✓
+9. If invalid/expired: 401 Unauthorized
+
+HOW TO USE TOKEN:
+
+Header Format:
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+cURL Example:
+curl -X GET http://localhost:5000/api/auth/me \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+Postman:
+1. Get token from login response
+2. Go to Headers tab
+3. Add: Key = "Authorization", Value = "Bearer YOUR_TOKEN"
+
+TOKEN EXPIRATION:
+- Default: 60 minutes
+- Configurable in appsettings.json
+- After expiration: Must login again
+
+SECURITY FEATURES:
+
+✓ Password Hashing: PBKDF2 (ASP.NET Identity)
+  - Passwords never stored as plain text
+  - Random salt for each password
+  - 10,000+ iterations for hashing
+
+✓ JWT Validation:
+  - Algorithm: HS256 (HMAC with SHA-256)
+  - Issuer: MuseWay
+  - Audience: MuseWayApp
+  - Contains: User ID, Email, Name, Subject
+
+✓ Input Validation:
+  - Null checks
+  - Length validation
+  - Format validation
+  - Type checking
+  - Range validation
+
+✓ SQL Injection Prevention:
+  - Using Entity Framework Core ORM
+  - Parameterized queries
+  - No raw SQL strings
+
+✓ CORS:
+  - Cross-Origin Resource Sharing enabled
+  - Can be called from any origin
+  - Configurable in Program.cs
+
+✓ Error Handling:
+  - Safe error messages
+  - Don't expose database structure
+  - Stack traces hidden in production
+  - Logging all errors
+
+================================================================================
+6. ERROR HANDLING & STATUS CODES
+================================================================================
+
+HTTP STATUS CODES:
+
+200 OK
+- Successful GET request
+- Request processed successfully
+- Data returned
+
+201 CREATED
+- Resource created successfully
+- New ID returned
+- Location header included
+
+400 BAD REQUEST
+- Invalid request format
+- Missing required fields
+- Invalid field values
+- Validation failed
+Example Response:
+{
+  "success": false,
+  "message": "Display name must be between 3 and 100 characters"
+}
+
+401 UNAUTHORIZED
+- Missing JWT token
+- Invalid JWT token
+- Expired JWT token
+- User not authenticated
+Example Response:
+{
+  "success": false,
+  "message": "Unauthorized"
+}
+
+403 FORBIDDEN
+- User authenticated but not authorized
+- Doesn't have permission
+- Not your resource
+
+404 NOT FOUND
+- Resource doesn't exist
+- Invalid ID
+- Wrong URL
+Example Response:
+{
+  "success": false,
+  "message": "Room with ID 999 not found"
+}
+
+409 CONFLICT
+- Business logic violation
+- Invalid state transition
+- Conflicting data
+Example Response:
+{
+  "success": false,
+  "message": "No path exists between room 1 and room 7"
+}
+
+500 INTERNAL SERVER ERROR
+- Unexpected server error
+- Database connection failure
+- Code exception
+- Try again later
+
+COMMON ERROR MESSAGES:
+
+"Display name cannot be empty"
+→ Solution: Provide non-empty display name
+
+"Display name must be between 3 and 100 characters"
+→ Solution: Enter 3-100 character name
+
+"Username is already taken"
+→ Solution: Choose different username
+
+"User not found"
+→ Solution: Check user ID
+
+"Room with ID X not found"
+→ Solution: Verify room ID exists
+
+"No path exists between room X and room Y"
+→ Solution: Rooms may not be connected
+
+"User not authenticated"
+→ Solution: Login and get JWT token
+
+"Room not found with Code: X"
+→ Solution: Verify artifact barcode
+
+================================================================================
+7. RESPONSE EXAMPLES
+================================================================================
+
+SUCCESSFUL LOGIN:
+{
+  "success": true,
+  "data": {
+	"token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI1ZDYxNjg4YTZhMzNjMzAwMDFhYjVhYzUiLCJ1bmlxdWVfbmFtZSI6ImpvaG5AZXhhbXBsZS5jb20iLCJlbWFpbCI6ImpvaG5AZXhhbXBsZS5jb20iLCJnaXZlbl9uYW1lIjoiSm9obiBEb2UiLCJuYmYiOjE2MjU2MzQzNDAsImV4cCI6MTYyNTYzNzk0MCwiaWF0IjoxNjI1NjM0MzQwLCJpc3MiOiJNdXNlV2F5IiwiYXVkIjoiTXVzZVdheSBBcHAifQ.X_QvpHZ6vK9zQ1vN2lM8qRsP3wTyFjK6aB5cD7eF9gH",
+	"userId": "5d61688a6a33c300001ab5ac5",
+	"email": "john@example.com",
+	"name": "John Doe"
+  }
+}
+
+SUCCESSFUL NAVIGATION:
+{
+  "success": true,
+  "path": [
+	{
+	  "roomId": 1,
+	  "name": "Entrance Hall",
+	  "x": 100.0,
+	  "y": 200.0
+	},
+	{
+	  "roomId": 3,
+	  "name": "Ancient Egypt Hall",
+	  "x": 250.0,
+	  "y": 300.0
+	},
+	{
+	  "roomId": 5,
+	  "name": "Jewelry Room",
+	  "x": 350.0,
+	  "y": 250.0
+	},
+	{
+	  "roomId": 7,
+	  "name": "Statue Room",
+	  "x": 500.0,
+	  "y": 600.0
+	}
+  ],
+  "totalDistance": 742.8
+}
+
+SUCCESSFUL ARTIFACT RETRIEVAL:
+{
+  "success": true,
+  "data": {
+	"id": 1,
+	"code": "SCARAB001",
+	"name": "Scarab Amulet",
+	"photoPath": "/images/artifacts/scarab001.jpg",
+	"textNarration": "A sacred scarab amulet from the New Kingdom period. Scarabs symbolized rebirth and transformation in ancient Egyptian belief.",
+	"period": "New Kingdom (1550-1077 BCE)",
+	"category": "Amulets & Jewelry",
+	"isFavorite": false,
+	"scannedArtifactId": 12,
+	"scannedAt": "2026-06-04T10:30:00Z"
+  }
+}
+
+VALIDATION ERROR:
+{
+  "success": false,
+  "message": "Display name must be between 3 and 100 characters"
+}
+
+NOT FOUND ERROR:
+{
+  "success": false,
+  "message": "Room with ID 999 not found"
+}
+
+UNAUTHORIZED ERROR:
+{
+  "success": false,
+  "message": "Unauthorized"
+}
+
+NO PATH ERROR:
+{
+  "success": false,
+  "message": "No path exists between room 1 and room 7",
+  "path": [],
+  "totalDistance": 0
+}
+
+================================================================================
+8. QUERY PARAMETERS & FILTERS
+================================================================================
+
+PAGINATION (Artifacts):
+
+GET /api/pieces?page=1&pageSize=12&lang=en
+
+Parameters:
+- page: Which page (default: 1)
+- pageSize: Items per page (default: 12)
+- lang: Language (en or ar)
+
+Example:
+- page=1, pageSize=12 → Items 1-12
+- page=2, pageSize=12 → Items 13-24
+- page=3, pageSize=20 → Items 41-60
+
+LANGUAGE SELECTION:
+
+Query parameter: lang=en or lang=ar
+
+Applied to:
+- GET /api/pieces/
+- GET /api/pieces/{id}
+- GET /api/pieces/GetByCode/{code}
+
+Example:
+GET /api/pieces?lang=ar → Returns Arabic descriptions
+GET /api/pieces?lang=en → Returns English descriptions
+
+TOUR RECOMMENDATIONS:
+
+GET /api/tours/recommend?category=History&durationMinutes=60&numberOfRooms=5
+
+Parameters (all optional, but at least one required):
+- category: Tour type (e.g., "History", "Art")
+- durationMinutes: Maximum duration in minutes
+- numberOfRooms: Number of rooms in tour
+
+Examples:
+- ?category=History → All history tours
+- ?durationMinutes=90 → Tours 90 minutes or less
+- ?numberOfRooms=5 → Tours with 5 or fewer rooms
+- ?category=Art&durationMinutes=120 → Art tours under 2 hours
+
+================================================================================
+9. INSTALLATION & SETUP
+================================================================================
+
+PREREQUISITES:
+- .NET 8 SDK
+- SQL Server
+- Visual Studio 2022+
+- Git
+
+INSTALLATION STEPS:
+
+1. Clone Repository:
+git clone https://github.com/Yussif76/EgyptianMuseum.git
+cd EgyptianMuseum
+
+2. Restore NuGet Packages:
+dotnet restore
+
+3. Configure Database Connection:
+Edit appsettings.json
+Update DefaultConnection with your SQL Server connection string
+
+4. Create Database:
+dotnet ef database update -p EgyptianMuseum.Infrastructure -s EgyptianMuseum.API
+
+5. Run Application:
+dotnet run --project EgyptianMuseum.API
+
+6. Access Application:
+HTTP: http://localhost:5000
+HTTPS: https://localhost:5001
+Swagger UI: http://localhost:5000/swagger
+
+CONFIGURATION FILE (appsettings.json):
+
+{
+  "ConnectionStrings": {
+	"DefaultConnection": "Server=.;Database=EgyptianMuseumDb;Trusted_Connection=true;"
+  },
+  "Jwt": {
+	"SecretKey": "your-very-long-secret-key-minimum-32-characters",
+	"Issuer": "MuseWay",
+	"Audience": "MuseWayApp",
+	"ExpiryMinutes": 60
+  },
+  "Logging": {
+	"LogLevel": {
+	  "Default": "Information",
+	  "Microsoft": "Warning"
+	}
+  },
+  "AllowedHosts": "*"
+}
+
+================================================================================
+10. TESTING WITH CURL
+================================================================================
+
+REGISTER USER:
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d "{
+	\"email\": \"user@example.com\",
+	\"password\": \"SecurePass123\",
+	\"name\": \"John Doe\",
+	\"language\": \"en\"
+  }"
+
+LOGIN USER:
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d "{
+	\"email\": \"user@example.com\",
+	\"password\": \"SecurePass123\"
+  }"
+
+GET CURRENT USER (Replace TOKEN with actual JWT):
+curl -X GET http://localhost:5000/api/auth/me \
+  -H "Authorization: Bearer TOKEN"
+
+UPDATE DISPLAY NAME:
+curl -X PUT http://localhost:5000/api/auth/change-username \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "{
+	\"newUserName\": \"Ahmed Yussif\"
+  }"
+
+GET ALL MAPS:
+curl -X GET http://localhost:5000/api/maps
+
+GET SHORTEST PATH:
+curl -X POST http://localhost:5000/api/navigation/shortest-path \
+  -H "Content-Type: application/json" \
+  -d "{
+	\"fromRoomId\": 1,
+	\"toRoomId\": 7
+  }"
+
+GET ALL ARTIFACTS:
+curl -X GET "http://localhost:5000/api/pieces?page=1&pageSize=12&lang=en"
+
+SCAN ARTIFACT:
+curl -X GET http://localhost:5000/api/pieces/GetByCode/SCARAB001 \
+  -H "Authorization: Bearer TOKEN"
+
+GET ALL TOURS:
+curl -X GET http://localhost:5000/api/tours
+
+RECOMMEND TOURS:
+curl -X GET "http://localhost:5000/api/tours/recommend?category=History&durationMinutes=90"
+
+================================================================================
+11. FEATURES SUMMARY
+================================================================================
+
+AUTHENTICATION & PROFILE:
+✓ User registration (email, password, name, language)
+✓ Secure login (JWT tokens, 60-min expiry)
+✓ Get user profile
+✓ Change display name (⭐ NEW VERSION 2.0)
+✓ Password reset with OTP
+
+ARTIFACT MANAGEMENT:
+✓ Browse all artifacts (with pagination)
+✓ Get artifact details (translations)
+✓ Scan artifacts by barcode/QR code
+✓ Track scan history
+✓ Mark favorites
+✓ Multi-language support (EN/AR)
+
+INDOOR NAVIGATION (⭐ NEW):
+✓ Calculate shortest path (Dijkstra's algorithm)
+✓ Between any two rooms
+✓ Real-time distance calculation
+✓ Room coordinates (X, Y)
+✓ Bidirectional paths
+
+MAPS & LAYOUT:
+✓ Create/manage maps
+✓ Define rooms with coordinates
+✓ Organize by zones
+✓ Connect rooms with paths
+✓ Visual layout support
+
+GUIDED TOURS:
+✓ Create tours
+✓ Add rooms in sequence
+✓ Recommend by filters (category, duration, rooms)
+✓ Track tour duration
+✓ Multi-language descriptions
+
+AI CHAT:
+✓ General museum chat
+✓ Artifact-specific chat
+✓ Conversation history
+✓ Multi-turn conversations
+✓ AI responses
+
+FEEDBACK:
+✓ Rate artifacts (1-5 stars)
+✓ Rate app (1-5 stars)
+✓ Rate chat experience
+✓ Leave comments
+✓ Anonymous feedback option
+
+SECURITY:
+✓ JWT authentication
+✓ Password hashing (PBKDF2)
+✓ Input validation
+✓ SQL injection prevention
+✓ CORS enabled
+✓ Soft delete support
+✓ Safe error messages
+
+================================================================================
+12. WHAT'S NEW IN VERSION 2.0
+================================================================================
+
+✓ INDOOR NAVIGATION FEATURE
+  - Dijkstra's algorithm for shortest paths
+  - Calculate distance from room coordinates
+  - Find optimal routes between rooms
+  - Returns step-by-step path
+
+✓ PROFILE UPDATE FEATURE
+  - Change display name (⭐ NEW)
+  - PUT /api/auth/change-username
+  - Validates length (3-100 characters)
+  - Only updates Name field, not UserName
+
+✓ DATABASE UPDATES
+  - IndoorMapPath: New FromRoomId/ToRoomId fields
+  - Removed old FromRoom/ToRoom string fields
+  - Distance calculated dynamically, not stored
+  - Better relationships between tables
+
+✓ IMPROVED DOCUMENTATION
+  - Comprehensive comments
+  - XML documentation on all public methods
+  - Clear error messages
+  - Better validation messages
+
+✓ PERFORMANCE OPTIMIZATIONS
+  - Indexed frequently queried columns
+  - Optimized database queries
+  - Efficient algorithm implementations
+  - Async/await throughout
+
+================================================================================
+13. KEY ARCHITECTURAL PRINCIPLES
+================================================================================
+
+CLEAN ARCHITECTURE:
+
+Each layer is independent and can be tested separately:
+
+1. DOMAIN LAYER
+   - Contains business entities
+   - No external dependencies
+   - Defines what data exists
+   - Example: Room.cs, User.cs
+
+2. APPLICATION LAYER
+   - Business logic & orchestration
+   - Service interfaces & implementations
+   - DTOs (Data Transfer Objects)
+   - No direct database access
+   - Example: NavigationService.cs
+
+3. INFRASTRUCTURE LAYER
+   - Database access (Entity Framework)
+   - Repository implementations
+   - Migrations & schema
+   - External service integrations
+   - Example: NavigationRepository.cs
+
+4. API LAYER
+   - HTTP controllers
+   - Request/response handling
+   - Authentication enforcement
+   - Error handling & mapping
+   - Example: NavigationController.cs
+
+BENEFITS:
+
+✓ Testability: Each layer testable independently
+✓ Maintainability: Changes isolated to specific layers
+✓ Reusability: Services used by multiple controllers
+✓ Scalability: Easy to add new features
+✓ Professional: Industry-standard approach
+
+DESIGN PATTERNS USED:
+
+1. REPOSITORY PATTERN
+   - Abstracts database access
+   - Single source of data queries
+   - Easy to swap implementations
+   - Supports unit testing
+
+2. SERVICE PATTERN
+   - Encapsulates business logic
+   - Called by controllers
+   - Single responsibility principle
+   - Reusable across controllers
+
+3. DEPENDENCY INJECTION
+   - Loosely coupled components
+   - Easy to mock/test
+   - Configured in Program.cs
+   - Lifetime management
+
+4. DTO PATTERN
+   - Separates entities from API
+   - Hides internal structure
+   - Flexible serialization
+   - API versioning support
+
+5. DIJKSTRA'S ALGORITHM
+   - Finds shortest paths
+   - O(V²) time complexity
+   - Graph-based implementation
+   - Bidirectional edges
+
+================================================================================
+14. TECHNOLOGY STACK DETAILS
+================================================================================
+
+LANGUAGE: C# 12
+- Modern language features
+- Type-safe
+- LINQ support
+- Async/await
+- Pattern matching
+
+FRAMEWORK: ASP.NET Core 8.0
+- High-performance
+- Cross-platform
+- Built-in DI container
+- Built-in logging
+- Built-in authentication
+
+DATABASE: SQL Server
+- RDBMS (Relational)
+- ACID properties
+- Transactions support
+- Indexes support
+- Full-text search
+
+ORM: Entity Framework Core 8
+- Object-relational mapping
+- Automatic migration
+- LINQ queries
+- Change tracking
+- Lazy loading support
+
+AUTHENTICATION: JWT (JSON Web Tokens)
+- Stateless authentication
+- Can be used across domains
+- Mobile-friendly
+- Token-based (no sessions)
+- Industry standard
+
+ADDITIONAL PACKAGES:
+- AutoMapper: Object mapping
+- Microsoft.AspNetCore.Identity: User management
+- System.IdentityModel.Tokens.Jwt: JWT handling
+- Microsoft.EntityFrameworkCore.SqlServer: SQL Server support
+
+================================================================================
+15. DEPLOYMENT CHECKLIST
+================================================================================
+
+PRE-DEPLOYMENT:
+
+✓ All endpoints tested
+✓ Authentication working
+✓ Database migrations applied
+✓ Error handling complete
+✓ Input validation on all endpoints
+✓ Logging configured
+✓ CORS settings configured
+✓ JWT secret configured
+✓ Connection string updated
+✓ No compilation warnings
+✓ Code reviewed
+✓ Tests passed
+
+DEPLOYMENT STEPS:
+
+1. Build application:
+   dotnet build --configuration Release
+
+2. Publish application:
+   dotnet publish -c Release -o ./publish
+
+3. Update database:
+   dotnet ef database update -c Release
+
+4. Deploy to server:
+   Copy publish folder to server
+   Configure appsettings.Production.json
+   Set environment to Production
+
+5. Verify deployment:
+   Test endpoints
+   Check logs
+   Monitor errors
+
+POST-DEPLOYMENT:
+
+✓ Test all endpoints
+✓ Verify authentication
+✓ Check database connectivity
+✓ Monitor error logs
+✓ Test with production data
+✓ Set up monitoring
+✓ Configure backups
+✓ Set up alerts
+
+================================================================================
+16. SUPPORT & DOCUMENTATION
+================================================================================
+
+GETTING HELP:
+
+1. Check error message
+2. Review documentation above
+3. Check code comments
+4. Test with Swagger UI
+5. Use cURL to test endpoints
+6. Check database connection
+7. Review logs
+
+COMMON ISSUES:
+
+Issue: 401 Unauthorized
+Solution: Login and include JWT token in Authorization header
+
+Issue: 404 Not Found
+Solution: Check resource ID exists, verify URL path
+
+Issue: 400 Bad Request
+Solution: Check request format, verify required fields
+
+Issue: Database connection failed
+Solution: Check connection string in appsettings.json
+
+Issue: Token expired
+Solution: Login again to get new token
+
+LOGGING:
+
+Logs are written to:
+- Console (development)
+- Event Viewer (production)
+- Application Insights (optional)
+
+Log levels:
+- Information: General flow
+- Warning: Potential issues
+- Error: Exceptions
+- Critical: System failures
+
+================================================================================
+END OF DOCUMENTATION
+================================================================================
+
+Project: Egyptian Museum API
+Version: 2.0
+Date: June 2026
+Status: PRODUCTION READY
+
+For latest updates: https://github.com/Yussif76/EgyptianMuseum
+Contact: Your Team
+
+This documentation contains:
+✓ Complete API reference (30+ endpoints)
+✓ Authentication & security details
+✓ Database schema
+✓ Architecture overview
+✓ Installation & setup guide
+✓ Testing examples
+✓ Error handling guide
+✓ Performance considerations
+✓ Deployment checklist
+
+Ready for production deployment!

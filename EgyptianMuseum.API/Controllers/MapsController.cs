@@ -1,5 +1,7 @@
 using EgyptianMuseum.Application.DTOs.Map;
 using EgyptianMuseum.Application.Interfaces;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EgyptianMuseum.API.Controllers
@@ -17,11 +19,11 @@ namespace EgyptianMuseum.API.Controllers
 
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetAll([FromQuery] string lang = "en", CancellationToken cancellationToken = default)
         {
             try
             {
-                var maps = await _mapService.GetAllAsync(cancellationToken);
+                var maps = await _mapService.GetAllAsync(lang, cancellationToken);
                 return Ok(new { success = true, data = maps });
             }
             catch (Exception ex)
@@ -33,14 +35,14 @@ namespace EgyptianMuseum.API.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetById(int id, [FromQuery] string lang = "en", CancellationToken cancellationToken = default)
         {
             try
             {
                 if (id <= 0)
                     return BadRequest(new { success = false, message = "Invalid ID" });
 
-                var map = await _mapService.GetByIdAsync(id, cancellationToken);
+                var map = await _mapService.GetByIdAsync(id, lang, cancellationToken);
                 if (map == null)
                     return NotFound(new { success = false, message = "Map not found" });
 
@@ -55,14 +57,14 @@ namespace EgyptianMuseum.API.Controllers
         [HttpGet("zone/{zone}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> GetByZone(string zone, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetByZone(string zone, [FromQuery] string lang = "en", CancellationToken cancellationToken = default)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(zone))
                     return BadRequest(new { success = false, message = "Zone cannot be empty" });
 
-                var maps = await _mapService.GetByZoneAsync(zone, cancellationToken);
+                var maps = await _mapService.GetByZoneAsync(zone, lang, cancellationToken);
                 return Ok(new { success = true, data = maps });
             }
             catch (Exception ex)
@@ -71,6 +73,7 @@ namespace EgyptianMuseum.API.Controllers
             }
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -90,10 +93,16 @@ namespace EgyptianMuseum.API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { success = false, message = ex.Message });
+                return BadRequest(new
+                {
+                    success = false,
+                    message = ex.Message,
+                    inner = ex.InnerException?.Message
+                });
             }
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPut("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -125,6 +134,7 @@ namespace EgyptianMuseum.API.Controllers
             }
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

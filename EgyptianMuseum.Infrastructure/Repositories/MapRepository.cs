@@ -17,6 +17,7 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         public async Task<List<Map>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Maps
+                .Include(m => m.Translations)
                 .Where(m => !m.IsDeleted)
                 .ToListAsync(cancellationToken);
         }
@@ -24,6 +25,7 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         public async Task<Map?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.Maps
+                .Include(m => m.Translations)
                 .Where(m => m.Id == id && !m.IsDeleted)
                 .FirstOrDefaultAsync(cancellationToken);
         }
@@ -31,6 +33,7 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         public async Task<List<Map>> GetByZoneAsync(string zone, CancellationToken cancellationToken = default)
         {
             return await _context.Maps
+                .Include(m => m.Translations)
                 .Where(m => m.Zone == zone && !m.IsDeleted)
                 .ToListAsync(cancellationToken);
         }
