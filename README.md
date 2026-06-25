@@ -1,365 +1,419 @@
-# 📚 Feedback System Extension - Complete Documentation Index
+# 🏛️ MuseWay - Grand Egyptian Museum Smart Guide
 
-## 🎯 Quick Start
+MuseWay is a smart mobile application designed to enhance the visitor experience inside the Grand Egyptian Museum (GEM).
 
-**Your implementation is complete and ready!** Here's what you need to know:
+The application combines Artificial Intelligence, Indoor Navigation, QR Code Scanning, Voice Assistance, and Smart Tours to provide visitors with an interactive and personalized museum experience.
 
-### Current Status
-- ✅ All code changes implemented
-- ✅ Build successful (no errors)
-- ✅ All validations in place
-- ✅ Full documentation provided
-
-### Next Immediate Action
-```bash
-# Create and apply database migration
-Add-Migration MakeTargetIdNullableAndAddAppFeedbackType -Project EgyptianMuseum.Infrastructure
-Update-Database -Project EgyptianMuseum.Infrastructure
-```
+This repository contains the backend implementation built with ASP.NET Core using Clean Architecture principles.
 
 ---
 
-## 📖 Documentation Files
+# 🚀 Features
 
-### 1. **IMPLEMENTATION_SUMMARY.md** ⭐ START HERE
-   - Overview of all changes made
-   - Files modified with descriptions
-   - Build status verification
-   - Complete checklist
-   - **Read this first to understand what was done**
-
-### 2. **FEEDBACK_IMPLEMENTATION_GUIDE.md** 📋 DETAILED REFERENCE
-   - Complete implementation details
-   - All entities, DTOs, services explained
-   - Validation rules documented
-   - Example requests shown
-   - Database migration info
-   - Best practices explained
-
-### 3. **TESTING_GUIDE.md** 🧪 TEST PROCEDURES
-   - 15 comprehensive test cases
-   - cURL examples for each scenario
-   - Postman collection format
-   - Edge cases to test
-   - Unit test examples
-   - Database query verification
-   - Pre-deployment checklist
-
-### 4. **ARCHITECTURE_DIAGRAMS.md** 🏗️ SYSTEM DESIGN
-   - System architecture diagram
-   - Request/response flows
-   - Validation decision tree
-   - Error handling map
-   - State diagrams
-   - Integration points
-   - Query performance notes
-
-### 5. **QUICK_REFERENCE.md** ⚡ COMMAND REFERENCE
-   - Setup & deployment commands
-   - cURL testing commands
-   - PowerShell examples
-   - SQL queries
-   - Unit test commands
-   - Troubleshooting guide
-   - Validation checklist
-
-### 6. **VERIFICATION_CHECKLIST.md** ✅ QUALITY ASSURANCE
-   - Build status verification
-   - Code changes verification
-   - Functionality verification
-   - Validation logic verification
-   - Error handling verification
-   - Security verification
-   - Endpoint verification
+### 🔐 Authentication & Authorization
+- User Registration
+- Secure Login
+- JWT Authentication
+- Forgot Password
+- OTP Verification
+- Password Reset
+- Change User Name
 
 ---
 
-## 🚀 Implementation Workflow
-
-### Phase 1: Database Setup
-```
-1. Review IMPLEMENTATION_SUMMARY.md
-2. Run migration command from QUICK_REFERENCE.md
-3. Verify database schema changed (nullable TargetId)
-```
-
-### Phase 2: Initial Testing
-```
-1. Start application
-2. Refer to TESTING_GUIDE.md
-3. Test basic CRUD operations
-4. Verify validation rules
-```
-
-### Phase 3: Comprehensive Testing
-```
-1. Follow all 15 test cases in TESTING_GUIDE.md
-2. Test with cURL commands from QUICK_REFERENCE.md
-3. Verify error responses
-4. Test security (JWT auth)
-```
-
-### Phase 4: Production Deployment
-```
-1. Review VERIFICATION_CHECKLIST.md
-2. Ensure all items are checked
-3. Deploy code changes
-4. Apply database migration
-5. Monitor application
-```
+### 🤖 AI Chat Assistant
+- General Museum Chat
+- Artifact-Specific Chat
+- Context-aware Responses
+- Multi-language Support
 
 ---
 
-## 🎓 Learning Resources by Role
-
-### For Architects
-- Read: **ARCHITECTURE_DIAGRAMS.md** - Understand system design
-- Review: **FEEDBACK_IMPLEMENTATION_GUIDE.md** - Best practices section
-
-### For Developers
-- Read: **IMPLEMENTATION_SUMMARY.md** - Get overview
-- Study: **FEEDBACK_IMPLEMENTATION_GUIDE.md** - Detailed code explanation
-- Review: **TESTING_GUIDE.md** - Test scenarios
-
-### For QA/Testers
-- Primary: **TESTING_GUIDE.md** - All test cases
-- Reference: **QUICK_REFERENCE.md** - Command examples
-- Verify: **VERIFICATION_CHECKLIST.md** - Pre-deployment checks
-
-### For DevOps/Database Admins
-- Start: **QUICK_REFERENCE.md** - Setup & deployment commands
-- Verify: **VERIFICATION_CHECKLIST.md** - Database checks
-- Monitor: **ARCHITECTURE_DIAGRAMS.md** - Performance notes
+### 🏺 Artifact Management
+- Artifact Information
+- QR Code Scanning
+- Multi-language Translations
+- Text Narration
+- Categories & Historical Periods
 
 ---
 
-## 📊 Changes at a Glance
+### 🗺 Indoor Navigation
+- Interactive Museum Maps
+- Room Management
+- Dijkstra Shortest Path Algorithm
+- Navigation Between Rooms
+
+---
+
+### ⭐ Smart Tours
+- Recommended Tours
+- Tour Details
+- Tour Routes
+- Tour Pieces
+- Multi-language Tours
+
+---
+
+### 📢 Notifications
+- User Notifications
+- Localized Messages
+
+---
+
+### 💬 Feedback System
+- Visitor Feedback
+- Rating Support
+
+---
+
+### 🌍 Localization
+- Arabic
+- English
+
+---
+
+# 🏗 Clean Architecture
+
+The backend follows the Clean Architecture approach to ensure scalability, maintainability, and separation of concerns.
 
 ```
-Domain Layer
-├── FeedbackTargetType.cs → Added App = 3
-└── Feedback.cs → TargetId now nullable (int?)
-
+Presentation Layer (API)
+        │
+        ▼
 Application Layer
-├── CreateFeedbackRequestDto.cs → Updated validation
-├── FeedbackDto.cs → TargetId nullable
-├── IFeedbackService.cs → Signature updated
-└── FeedbackService.cs → Validation logic added
-
+        │
+        ▼
+Domain Layer
+        │
+        ▼
 Infrastructure Layer
-├── FeedbackRepository.cs → Query logic updated
-└── IFeedbackRepository.cs → Signature updated
+```
 
-API Layer
-└── FeedbackController.cs → Endpoint updated
+### API Layer
+Responsible for:
+
+- Controllers
+- Authentication
+- Swagger
+- HTTP Requests & Responses
+
+---
+
+### Application Layer
+
+Contains all business logic including:
+
+- Services
+- DTOs
+- Interfaces
+- Validation
+- Use Cases
+
+---
+
+### Domain Layer
+
+Contains the core business entities.
+
+Examples:
+
+- ApplicationUser
+- Pieces
+- Tours
+- Rooms
+- Maps
+- Chat
+- Feedback
+- Notifications
+
+---
+
+### Infrastructure Layer
+
+Responsible for:
+
+- Entity Framework Core
+- SQL Server
+- Repositories
+- ASP.NET Identity
+- SMTP Email Service
+- External Integrations
+
+---
+
+# 🛠 Technologies
+
+## Backend
+
+- ASP.NET Core 8
+- C#
+- Entity Framework Core
+- SQL Server
+- ASP.NET Identity
+- JWT Authentication
+- Swagger
+
+---
+
+## Architecture
+
+- Clean Architecture
+- Repository Pattern
+- Dependency Injection
+
+---
+
+## AI
+
+- OpenAI API
+- Prompt Engineering
+
+---
+
+## Algorithms
+
+- Dijkstra Algorithm
+
+---
+
+## Storage
+
+- Supabase Storage
+
+---
+
+## Email
+
+- SMTP (Gmail)
+
+---
+
+# 📂 Project Structure
+
+```
+EgyptianMuseum.API
+│
+├── Controllers
+├── Middleware
+├── Program.cs
+└── appsettings.json
+
+EgyptianMuseum.Application
+│
+├── DTOs
+├── Interfaces
+├── Services
+└── Validators
+
+EgyptianMuseum.Domain
+│
+├── Entities
+├── Enums
+└── Common
+
+EgyptianMuseum.Infrastructure
+│
+├── Data
+├── Repositories
+├── Identity
+├── Services
+└── Migrations
 ```
 
 ---
 
-## 🔍 Key Features
+# 📚 API Endpoints
 
-| Feature | Details | Docs |
-|---------|---------|------|
-| App Feedback | System-wide feedback (null targetId) | FEEDBACK_IMPLEMENTATION_GUIDE.md |
-| Validation | Type-specific rules enforced | TESTING_GUIDE.md |
-| Security | JWT + user-scoped access | ARCHITECTURE_DIAGRAMS.md |
-| Error Handling | Proper HTTP status codes | VERIFICATION_CHECKLIST.md |
-| Async/Await | All database operations async | FEEDBACK_IMPLEMENTATION_GUIDE.md |
-| Type Safety | Enum for TargetType | IMPLEMENTATION_SUMMARY.md |
+### Authentication
 
----
+```
+POST /api/auth/register
 
-## 🛠️ Common Tasks
+POST /api/auth/login
 
-### "How do I set up the database?"
-→ See **QUICK_REFERENCE.md** → Setup & Deployment section
+POST /api/auth/forgot-password
 
-### "What endpoints are available?"
-→ See **FEEDBACK_IMPLEMENTATION_GUIDE.md** → Endpoint section
+POST /api/auth/verify-otp
 
-### "How do I test the App?"
-→ See **TESTING_GUIDE.md** → Full testing guide
-
-### "What validation rules exist?"
-→ See **FEEDBACK_IMPLEMENTATION_GUIDE.md** → Validation section
-
-### "Show me example requests"
-→ See **QUICK_REFERENCE.md** → cURL examples
-
-### "How does the system work?"
-→ See **ARCHITECTURE_DIAGRAMS.md** → System Architecture
-
-### "What files were changed?"
-→ See **IMPLEMENTATION_SUMMARY.md** → Files Modified
-
-### "Is everything working?"
-→ See **VERIFICATION_CHECKLIST.md** → All checks passed ✅
+POST /api/auth/reset-password
+```
 
 ---
 
-## 🔐 Security Summary
+### Chat
 
-✅ **Authentication:** JWT Bearer required on all endpoints  
-✅ **Authorization:** User can only access own feedback  
-✅ **Ownership:** Verified before delete operation  
-✅ **Input Validation:** Comprehensive at multiple layers  
-✅ **Error Messages:** User-friendly, no sensitive data  
+```
+POST /api/chat/general
 
----
-
-## 📈 Performance Notes
-
-- Nullable TargetId design allows efficient filtering
-- Proper indexes recommended for:
-  - (TargetType, CreatedAt DESC)
-  - (UserId, CreatedAt DESC)
-  - (TargetType, TargetId, CreatedAt DESC)
-- All queries are async
-- CancellationToken support throughout
-
-See **ARCHITECTURE_DIAGRAMS.md** for detailed performance notes.
+POST /api/chat/artifact
+```
 
 ---
 
-## ✨ Code Quality
+### Pieces
 
-- ✅ Clean Architecture principles
-- ✅ SOLID principles followed
-- ✅ Repository pattern implemented
-- ✅ Dependency injection used
-- ✅ No code duplication
-- ✅ Consistent naming conventions
-- ✅ Comprehensive error handling
-- ✅ Full async/await support
+```
+GET /api/pieces
 
----
+GET /api/pieces/{id}
 
-## 📋 Validation Rules Summary
-
-| Rule | Details |
-|------|---------|
-| App Feedback | targetId MUST be null |
-| Artifact/Chat | targetId REQUIRED |
-| Rating | Must be 1-5 |
-| Comment | Optional, max 1000 chars |
-| TargetType | Must be one of three values |
-| Target Exists | Verified for Artifact/Chat |
+POST /api/pieces
+```
 
 ---
 
-## 🧪 Test Coverage
+### Maps
 
-| Scenario | Status | Guide |
-|----------|--------|-------|
-| Valid App Feedback | ✅ | TESTING_GUIDE.md |
-| Valid Artifact Feedback | ✅ | TESTING_GUIDE.md |
-| Valid Chat Feedback | ✅ | TESTING_GUIDE.md |
-| Invalid Requests | ✅ | TESTING_GUIDE.md |
-| Authorization | ✅ | TESTING_GUIDE.md |
-| Edge Cases | ✅ | TESTING_GUIDE.md |
+```
+GET /api/maps
+
+GET /api/maps/{id}
+```
 
 ---
 
-## 🚦 Deployment Checklist
+### Rooms
 
-- [ ] Review IMPLEMENTATION_SUMMARY.md
-- [ ] Create database migration
-- [ ] Apply database migration
-- [ ] Run test suite from TESTING_GUIDE.md
-- [ ] Verify all endpoints work
-- [ ] Check error handling
-- [ ] Verify security (JWT auth)
-- [ ] Confirm no breaking changes
-- [ ] Deploy to staging
-- [ ] Final production checks
-- [ ] Deploy to production
-- [ ] Monitor application
+```
+GET /api/rooms
+```
 
 ---
 
-## 📞 Support & References
+### Tours
 
-### If you need to understand...
+```
+GET /api/tours
 
-| Topic | Document | Section |
-|-------|----------|---------|
-| What changed | IMPLEMENTATION_SUMMARY.md | All |
-| How to test | TESTING_GUIDE.md | Test Cases |
-| How to deploy | QUICK_REFERENCE.md | Setup & Deployment |
-| How it works | ARCHITECTURE_DIAGRAMS.md | System Architecture |
-| Validation rules | FEEDBACK_IMPLEMENTATION_GUIDE.md | Validation Logic |
-| Error handling | VERIFICATION_CHECKLIST.md | Error Handling |
-| Database queries | QUICK_REFERENCE.md | Database Queries |
+GET /api/tours/recommended
+
+POST /api/tours
+```
 
 ---
 
-## 🎯 Success Metrics
+### Notifications
 
-✅ **Build:** Successful (0 errors, 0 warnings)  
-✅ **Code Changes:** 9 files modified properly  
-✅ **Functionality:** All endpoints working  
-✅ **Validation:** All rules enforced  
-✅ **Security:** Authentication & authorization in place  
-✅ **Documentation:** 6 comprehensive guides created  
-✅ **Testing:** 15+ test scenarios documented  
-✅ **Quality:** Clean architecture maintained  
+```
+GET /api/notifications
+```
 
 ---
 
-## 📅 Timeline
+### Feedback
 
-| Phase | Status | Docs |
-|-------|--------|------|
-| ✅ Implementation | Complete | IMPLEMENTATION_SUMMARY.md |
-| ✅ Testing Plan | Complete | TESTING_GUIDE.md |
-| ✅ Documentation | Complete | All docs |
-| ⏳ Database Migration | Ready | QUICK_REFERENCE.md |
-| ⏳ Testing | Ready to execute | TESTING_GUIDE.md |
-| ⏳ Deployment | Ready | All docs |
+```
+POST /api/feedback
+```
 
 ---
 
-## 🎉 Summary
+# 💡 Key Features
 
-Your feedback system has been successfully extended to support app-wide feedback!
-
-**What's new:**
-- New "App" feedback type for system-wide feedback
-- Nullable TargetId for flexible feedback targeting
-- Enhanced validation logic
-- Comprehensive error handling
-- Full security implementation
-
-**Files provided:**
-- 6 detailed documentation guides
-- Migration template
-- Test scenarios
-- Command reference
-- Architecture diagrams
-
-**Status:** ✅ READY FOR DEPLOYMENT
-
-Next step: Run the database migration and start testing! 🚀
+- Clean Architecture
+- Repository Pattern
+- Dependency Injection
+- JWT Authentication
+- OTP Authentication
+- Entity Framework Core
+- SQL Server
+- Dijkstra Algorithm
+- AI Chat Assistant
+- QR Code Scanning
+- Indoor Navigation
+- Multi-language Support
+- Smart Tour Recommendation
+- Text Narration
+- RESTful API
 
 ---
 
-## 📚 Document Legend
+# 🚀 Getting Started
 
-| Icon | Meaning |
-|------|---------|
-| ⭐ | Start here |
-| 📋 | Reference |
-| 🧪 | Testing |
-| 🏗️ | Architecture |
-| ⚡ | Quick commands |
-| ✅ | Verification |
+## Clone Repository
+
+```bash
+git clone https://github.com/your-username/MuseWay-Backend.git
+```
 
 ---
 
-**Implementation Date:** January 2025  
-**Version:** 1.0 (Complete)  
-**Status:** ✅ PRODUCTION READY  
+## Restore Packages
 
-For any questions, refer to the appropriate documentation file above.
+```bash
+dotnet restore
+```
 
-**Happy coding! 🚀**
+---
+
+## Update Database
+
+```bash
+dotnet ef database update
+```
+
+---
+
+## Run Project
+
+```bash
+dotnet run
+```
+
+---
+
+## Open Swagger
+
+```
+https://localhost:xxxx/swagger
+```
+
+---
+
+# 📸 Screenshots
+
+### Swagger
+
+(Add Swagger Screenshot)
+
+---
+
+### Database Diagram
+
+(Add ERD Screenshot)
+
+---
+
+### Clean Architecture
+
+(Add Architecture Diagram)
+
+---
+
+### Mobile Application
+
+(Add Flutter Screenshots)
+
+---
+
+# 🔮 Future Improvements
+
+- Refresh Token Authentication
+- Push Notifications
+- AI Voice Assistant
+- Offline Navigation
+- Analytics Dashboard
+- Museum Administration Panel
+
+---
+
+# 👨‍💻 Developed By
+
+Graduation Project
+
+Faculty of Computers and Artificial Intelligence
+
+Benha University
+
+2026
