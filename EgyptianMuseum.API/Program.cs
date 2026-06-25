@@ -3,8 +3,12 @@ using EgyptianMuseum.Application.Services.Auth;
 using EgyptianMuseum.Application.Services.Chat;
 using EgyptianMuseum.Application.Services.Email;
 using EgyptianMuseum.Application.Services.Feedback;
+using EgyptianMuseum.Application.Services.Maps;
+using EgyptianMuseum.Application.Services.Navigation;
+using EgyptianMuseum.Application.Services.Rooms;
 using EgyptianMuseum.Application.Services.ScannedArtifacts;
 using EgyptianMuseum.Application.Services.Services;
+using EgyptianMuseum.Application.Services.Tours;
 using EgyptianMuseum.Domain.Entities;
 using EgyptianMuseum.Infrastructure.Data;
 using EgyptianMuseum.Infrastructure.Data.Interceptor;
@@ -108,9 +112,40 @@ namespace EgyptianMuseum.API
             builder.Services.AddScoped(typeof(IPiecesRepository<>), typeof(PiecesRepository<>));
             builder.Services.AddScoped<IPiecesServices, PiecesService>();
 
+            // Register Map services and repositories
+            builder.Services.AddScoped<IMapService, MapService>();
+            builder.Services.AddScoped<IMapRepository, MapRepository>();
+            builder.Services.AddScoped<IIndoorMapPathService, IndoorMapPathService>();
+            builder.Services.AddScoped<IIndoorMapPathRepository, IndoorMapPathRepository>();
+
+            // Register Room services and repositories
+            builder.Services.AddScoped<IRoomService, RoomService>();
+            builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+
+            // Register Navigation services and repositories
+            builder.Services.AddScoped<INavigationService, NavigationService>();
+            builder.Services.AddScoped<INavigationRepository, NavigationRepository>();
+
+            // Register Tour services and repositories
+            builder.Services.AddScoped<ITourService, TourService>();
+            builder.Services.AddScoped<ITourRepository, TourRepository>();
+            builder.Services.AddScoped<ITourRoomRepository, TourRoomRepository>();
+
             #region SwaggerSettings
             builder.Services.AddSwaggerGen(options =>
             {
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "MuseWay API",
+                    Version = "v1",
+                    Description = @"
+    Explore History • Discover Treasures • Inspire Journeys",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "museway.official.app@gmail.com",
+                        Email = "museway.official.app@gmail.com",
+                    }
+                });
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",

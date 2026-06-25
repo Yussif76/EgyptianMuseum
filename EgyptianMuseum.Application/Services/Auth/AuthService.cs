@@ -219,6 +219,41 @@ namespace EgyptianMuseum.Application.Services.Auth
             await _otpRepository.UpdateAsync(otp);
         }
 
+        public async Task ChangeUserNameAsync(string userId, ChangeUserNameRequestDto request)
+        {
+            // Validation: Check if newUserName is provided
+            if (string.IsNullOrWhiteSpace(request?.NewUserName))
+            {
+                throw new ArgumentException("Display name cannot be empty");
+            }
+
+            var newName = request.NewUserName.Trim();
+
+            // Validation: Check name length (3-100 characters)
+            if (newName.Length < 3 || newName.Length > 100)
+            {
+                throw new ArgumentException("Display name must be between 3 and 100 characters");
+            }
+
+            // Get the current user
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+            {
+                throw new InvalidOperationException("User not found");
+            }
+
+            // Update only the display name (Name field)
+            // Do NOT modify UserName, NormalizedUserName, Email, or PasswordHash
+            user.Name = newName;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Failed to update display name: {errors}");
+            }
+        }
+
         private string GenerateOtp()
         {
             var random = new Random();

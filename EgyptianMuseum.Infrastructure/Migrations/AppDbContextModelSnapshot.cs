@@ -191,6 +191,134 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.ToTable("Feedbacks");
                 });
 
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.IndoorMapPath", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FromRoomId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("MapId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ToRoomId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromRoomId");
+
+                    b.HasIndex("MapId");
+
+                    b.HasIndex("ToRoomId");
+
+                    b.ToTable("IndoorMapPaths");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Map", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Width")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Zone")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Zone");
+
+                    b.ToTable("Maps");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.MapTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("MapId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ZoneName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MapId", "LanguageCode")
+                        .IsUnique();
+
+                    b.ToTable("MapTranslations");
+                });
+
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.PasswordResetOtp", b =>
                 {
                     b.Property<int>("Id")
@@ -296,6 +424,9 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("RoomId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -304,7 +435,97 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
+                    b.HasIndex("RoomId");
+
                     b.ToTable("Artifactpieces", (string)null);
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Room", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("MapId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("XCoord")
+                        .HasColumnType("float");
+
+                    b.Property<double>("YCoord")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MapId");
+
+                    b.ToTable("Rooms");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.RoomTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoomId", "LanguageCode")
+                        .IsUnique();
+
+                    b.ToTable("RoomTranslations");
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.ScannedArtifact", b =>
@@ -342,6 +563,162 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                         .HasDatabaseName("UK_ScannedArtifacts_UserId_PieceId");
 
                     b.ToTable("ScannedArtifacts");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Tour", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Color")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IconPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsRecommended")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MarksJson")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("nvarchar(max)")
+                        .HasDefaultValue("[]");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("PathImageUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category");
+
+                    b.ToTable("Tours");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.TourPiece", b =>
+                {
+                    b.Property<int>("TourId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PieceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("TourId", "PieceId");
+
+                    b.HasIndex("PieceId");
+
+                    b.HasIndex("TourId", "PieceId")
+                        .IsUnique();
+
+                    b.ToTable("TourPieces");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.TourRoom", b =>
+                {
+                    b.Property<int>("TourId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.HasKey("TourId", "RoomId");
+
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("TourId", "Order");
+
+                    b.ToTable("TourRooms");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.TourTranslation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LanguageCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("TourId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TourId", "LanguageCode")
+                        .IsUnique();
+
+                    b.ToTable("TourTranslations");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -499,6 +876,44 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.IndoorMapPath", b =>
+                {
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Room", "FromRoom")
+                        .WithMany("FromPaths")
+                        .HasForeignKey("FromRoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Map", "Map")
+                        .WithMany("Paths")
+                        .HasForeignKey("MapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Room", "ToRoom")
+                        .WithMany("ToPaths")
+                        .HasForeignKey("ToRoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("FromRoom");
+
+                    b.Navigation("Map");
+
+                    b.Navigation("ToRoom");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.MapTranslation", b =>
+                {
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Map", "Map")
+                        .WithMany("Translations")
+                        .HasForeignKey("MapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Map");
+                });
+
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.PasswordResetOtp", b =>
                 {
                     b.HasOne("EgyptianMuseum.Domain.Entities.ApplicationUser", "User")
@@ -522,6 +937,38 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.Navigation("Piece");
                 });
 
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Pieces", b =>
+                {
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Room", "Room")
+                        .WithMany("Pieces")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Room", b =>
+                {
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Map", "Map")
+                        .WithMany("Rooms")
+                        .HasForeignKey("MapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Map");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.RoomTranslation", b =>
+                {
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Room", "Room")
+                        .WithMany("Translations")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+                });
+
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.ScannedArtifact", b =>
                 {
                     b.HasOne("EgyptianMuseum.Domain.Entities.Pieces", "Piece")
@@ -540,6 +987,55 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.Navigation("Piece");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.TourPiece", b =>
+                {
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Pieces", "Piece")
+                        .WithMany()
+                        .HasForeignKey("PieceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Tour", "Tour")
+                        .WithMany("TourPieces")
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Piece");
+
+                    b.Navigation("Tour");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.TourRoom", b =>
+                {
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Room", "Room")
+                        .WithMany("TourRooms")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Tour", "Tour")
+                        .WithMany("TourRooms")
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
+
+                    b.Navigation("Tour");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.TourTranslation", b =>
+                {
+                    b.HasOne("EgyptianMuseum.Domain.Entities.Tour", "Tour")
+                        .WithMany("Translations")
+                        .HasForeignKey("TourId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tour");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -598,9 +1094,40 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.Navigation("Messages");
                 });
 
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Map", b =>
+                {
+                    b.Navigation("Paths");
+
+                    b.Navigation("Rooms");
+
+                    b.Navigation("Translations");
+                });
+
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Pieces", b =>
                 {
                     b.Navigation("ScannedArtifacts");
+
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Room", b =>
+                {
+                    b.Navigation("FromPaths");
+
+                    b.Navigation("Pieces");
+
+                    b.Navigation("ToPaths");
+
+                    b.Navigation("TourRooms");
+
+                    b.Navigation("Translations");
+                });
+
+            modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Tour", b =>
+                {
+                    b.Navigation("TourPieces");
+
+                    b.Navigation("TourRooms");
 
                     b.Navigation("Translations");
                 });

@@ -26,4 +26,8 @@
     <ProjectReference Include="..\EgyptianMuseum.Domain\EgyptianMuseum.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Data\Configurations\" />
+  </ItemGroup>
+
 </Project>
