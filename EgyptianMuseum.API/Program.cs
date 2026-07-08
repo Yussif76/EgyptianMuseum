@@ -92,6 +92,8 @@ namespace EgyptianMuseum.API
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IPasswordResetOtpRepository, PasswordResetOtpRepository>();
 
+            builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
             // Register Chat services and repositories
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IChatConversationRepository, ChatConversationRepository>();

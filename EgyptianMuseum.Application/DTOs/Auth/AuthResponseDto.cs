@@ -6,5 +6,6 @@ namespace EgyptianMuseum.Application.DTOs.Auth
         public string UserId { get; set; } = null!;
         public string? Email { get; set; }
         public string? Name { get; set; }
+        public string RefreshToken { get; set; }= null!;
     }
 }

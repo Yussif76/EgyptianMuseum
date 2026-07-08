@@ -10,7 +10,7 @@ namespace EgyptianMuseum.Infrastructure.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
         }
-
+        public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
         public DbSet<ChatConversation> ChatConversations { get; set; } = null!;
         public DbSet<ChatMessage> ChatMessages { get; set; } = null!;
         public DbSet<ScannedArtifact> ScannedArtifacts { get; set; } = null!;
