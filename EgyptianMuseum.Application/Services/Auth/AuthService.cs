@@ -1,6 +1,7 @@
 using EgyptianMuseum.Application.DTOs.Auth;
 using EgyptianMuseum.Application.Interfaces;
 using EgyptianMuseum.Domain.Entities;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -20,6 +21,7 @@ namespace EgyptianMuseum.Application.Services.Auth
         private readonly IEmailService _emailService;
         private readonly IPasswordResetOtpRepository _otpRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IGoogleAuthService _googleAuthService;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
@@ -27,7 +29,9 @@ namespace EgyptianMuseum.Application.Services.Auth
             IConfiguration configuration,
             IEmailService emailService,
             IPasswordResetOtpRepository otpRepository,
-            IRefreshTokenRepository refreshTokenRepository)
+            IRefreshTokenRepository refreshTokenRepository,
+
+            IGoogleAuthService googleAuthService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -35,6 +39,7 @@ namespace EgyptianMuseum.Application.Services.Auth
             _emailService = emailService;
             _otpRepository = otpRepository;
             _refreshTokenRepository = refreshTokenRepository;
+            _googleAuthService = googleAuthService;
         }
 
         public async Task<string> RegisterAsync(RegisterRequestDto dto)
@@ -316,7 +321,7 @@ namespace EgyptianMuseum.Application.Services.Auth
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-      
+
 
 
         // This method generates a secure random refresh token.
@@ -336,7 +341,7 @@ namespace EgyptianMuseum.Application.Services.Auth
             };
         }
 
-        public async Task<AuthResponseDto> RefreshTokenAsync( RefreshTokenRequestDto dto)
+        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenRequestDto dto)
         {
             var storedToken =
                 await _refreshTokenRepository
@@ -374,6 +379,42 @@ namespace EgyptianMuseum.Application.Services.Auth
         public Task LogoutAsync(string refreshToken)
         {
             throw new NotImplementedException();
+        }
+
+        // This method handles Google login using the provided Google ID token.
+        public async Task <AuthResponseDto> GoogleLoginAsync(GoogleLoginRequestDto dto)
+        {
+            var googleUser = await _googleAuthService.ValidateTokenAsync(dto.IdToken);
+            var user = await _userManager.FindByEmailAsync(googleUser.Email);
+            if(user == null)
+            {
+                user = new ApplicationUser
+                {
+                    UserName = googleUser.Email,
+                    Email = googleUser.Email,
+                    Name = googleUser.Name
+                };
+                var result = await _userManager.CreateAsync(user);
+                if(!result.Succeeded)
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    throw new InvalidOperationException($"User creation failed: {errors}");
+                }
+            }
+
+            var token = GenerateJwtToken(user);
+            var refreshToken = GenerateRefreshToken();
+            refreshToken.UserId = user.Id;
+            await _refreshTokenRepository.AddAsync(refreshToken);
+
+            return new AuthResponseDto
+            {
+                Token = token,
+                UserId = user.Id,
+                Email = user.Email,
+                Name = user.Name,
+                RefreshToken = refreshToken.Token
+            };
         }
     }
 }

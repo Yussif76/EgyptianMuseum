@@ -161,6 +161,20 @@ namespace EgyptianMuseum.API.Controllers
             }
         }
 
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequestDto dto)
+        {
+            try
+            {
+                var response = await _authService.GoogleLoginAsync(dto);
+                return Ok(new { success = true, data = response });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(new { success = false, errors = new[] { ex.Message } });
+            }
+        }
+
         /// <summary>
         /// Updates the display name of the authenticated user.
         /// </summary>
