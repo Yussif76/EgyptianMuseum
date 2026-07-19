@@ -12,6 +12,7 @@ using EgyptianMuseum.Application.Services.Tours;
 using EgyptianMuseum.Domain.Entities;
 using EgyptianMuseum.Infrastructure.Data;
 using EgyptianMuseum.Infrastructure.Data.Interceptor;
+using EgyptianMuseum.Infrastructure.ExternalServices;
 using EgyptianMuseum.Infrastructure.Helpers;
 using EgyptianMuseum.Infrastructure.Repositories;
 
@@ -91,6 +92,10 @@ namespace EgyptianMuseum.API
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IEmailService, EmailService>();
             builder.Services.AddScoped<IPasswordResetOtpRepository, PasswordResetOtpRepository>();
+
+            builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            // Register GoogleAuthService
+            builder.Services.AddScoped<IGoogleAuthService, GoogleAuthService>();
 
             // Register Chat services and repositories
             builder.Services.AddScoped<IChatService, ChatService>();

@@ -50,6 +50,26 @@ namespace EgyptianMuseum.API.Controllers
             }
         }
 
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh(RefreshTokenRequestDto dto)
+        {
+            try
+            {
+                var result =
+                    await _authService.RefreshTokenAsync(dto);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new
+                {
+                    success = false,
+                    errors = new[] { ex.Message }
+                });
+            }
+        }
+
         //[Authorize]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("me")]
@@ -138,6 +158,20 @@ namespace EgyptianMuseum.API.Controllers
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequestDto dto)
+        {
+            try
+            {
+                var response = await _authService.GoogleLoginAsync(dto);
+                return Ok(new { success = true, data = response });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(new { success = false, errors = new[] { ex.Message } });
             }
         }
 
