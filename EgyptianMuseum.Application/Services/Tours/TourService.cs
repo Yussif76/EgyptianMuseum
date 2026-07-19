@@ -403,7 +403,7 @@ namespace EgyptianMuseum.Application.Services.Tours
             {
                 Id = piece.Id,
                 Code = piece.Code,
-                PhotoPath = piece.PhotoPath,
+                PhotoPaths = piece.Images.Select(img => img.ImagePath).ToList(),
                 Name = translation?.Name ?? piece.Name ?? string.Empty,
                 TextNarration = translation?.TextNarration ?? string.Empty,
                 Period = translation?.Period ?? string.Empty,

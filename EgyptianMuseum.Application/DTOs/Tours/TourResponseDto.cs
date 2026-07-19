@@ -29,7 +29,7 @@ namespace EgyptianMuseum.Application.DTOs.Tours
 
         public string Code { get; set; } = null!;
 
-        public string PhotoPath { get; set; } = null!;
+        public List<string> PhotoPaths { get; set; } = new();
 
         public string Name { get; set; } = null!;
 

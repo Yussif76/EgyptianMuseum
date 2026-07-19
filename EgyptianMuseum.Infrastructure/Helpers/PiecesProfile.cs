@@ -19,12 +19,16 @@ namespace EgyptianMuseum.Infrastructure.Helpers
                 .ForMember(dest => dest.Code,
                     opt => opt.MapFrom(src => src.Code))
                 .ForMember(dest => dest.Id,
-                    opt => opt.MapFrom(src => src.Id));
+                    opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.PhotoPaths,
+                    opt => opt.MapFrom(src => src.Images.Select(img => img.ImagePath).ToList()));
 
-            CreateMap<CreatePiecesRequest, Pieces>();
+            CreateMap<CreatePiecesRequest, Pieces>()
+                .ForMember(dest => dest.Images, opt => opt.Ignore());
 
             CreateMap<UpdatePiecesRequest, Pieces>()
-                .ForMember(dest => dest.Translations, opt => opt.Ignore());
+                .ForMember(dest => dest.Translations, opt => opt.Ignore())
+                .ForMember(dest => dest.Images, opt => opt.Ignore());
             CreateMap<PieceTranslationRequest, PieceTranslation>();
 
         }

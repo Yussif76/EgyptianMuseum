@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace EgyptianMuseum.API.Controllers
 {
@@ -28,6 +29,45 @@ namespace EgyptianMuseum.API.Controllers
         private string? GetUserIdFromToken()
         {
             return User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        }
+
+        /// <summary>
+        /// Serializes PieceLocationDto list to JSON string for storage in PieceLocationJson.
+        /// Returns null if the list is null or empty.
+        /// </summary>
+        private string? SerializePieceLocation(List<PieceLocationDto>? locations)
+        {
+            if (locations == null || !locations.Any())
+                return null;
+
+            try
+            {
+                return JsonSerializer.Serialize(locations);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException("Failed to serialize piece locations", ex);
+            }
+        }
+
+        /// <summary>
+        /// Deserializes PieceLocationJson string back to PieceLocationDto list.
+        /// Returns null if the JSON is null or empty.
+        /// </summary>
+        private List<PieceLocationDto>? DeserializePieceLocation(string? pieceLocationJson)
+        {
+            if (string.IsNullOrWhiteSpace(pieceLocationJson) || pieceLocationJson == "[]")
+                return null;
+
+            try
+            {
+                var locations = JsonSerializer.Deserialize<List<PieceLocationDto>>(pieceLocationJson);
+                return locations ?? null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to deserialize piece locations from storage", ex);
+            }
         }
 
         [HttpGet]
@@ -56,10 +96,13 @@ namespace EgyptianMuseum.API.Controllers
                     Id = piece.Id,
                     Code = piece.Code,
                     Name = translation?.Name ?? string.Empty,
-                    PhotoPath = piece.PhotoPath,
+                    PhotoPaths = piece.Images.Select(img => img.ImagePath).ToList(),
                     TextNarration = translation?.TextNarration,
                     Period = translation?.Period,
-                    Category = translation?.Category
+                    Category = translation?.Category,
+                    GalleryNum = piece.GalleryNum,
+                    Collection = translation?.Collection,
+                    PieceLocation = DeserializePieceLocation(piece.PieceLocationJson)
                 };
             }).ToList();
 
@@ -95,10 +138,13 @@ namespace EgyptianMuseum.API.Controllers
                 Id = piece.Id,
                 Code = piece.Code,
                 Name = translation?.Name ?? piece.Name,
-                PhotoPath = piece.PhotoPath,
+                PhotoPaths = piece.Images.Select(img => img.ImagePath).ToList(),
                 TextNarration = translation?.TextNarration ?? string.Empty,
                 Period = translation?.Period ?? string.Empty,
                 Category = translation?.Category ?? string.Empty,
+                GalleryNum = piece.GalleryNum,
+                Collection = translation?.Collection,
+                PieceLocation = DeserializePieceLocation(piece.PieceLocationJson),
                 IsFavorite = false,
                 ScannedArtifactId = null,
                 ScannedAt = null
@@ -142,10 +188,13 @@ namespace EgyptianMuseum.API.Controllers
                 Id = piece.Id,
                 Code = piece.Code,
                 Name = translation?.Name ?? piece.Name,
-                PhotoPath = piece.PhotoPath,
+                PhotoPaths = piece.Images.Select(img => img.ImagePath).ToList(),
                 TextNarration = translation?.TextNarration ?? string.Empty,
                 Period = translation?.Period ?? string.Empty,
                 Category = translation?.Category ?? string.Empty,
+                GalleryNum = piece.GalleryNum,
+                Collection = translation?.Collection,
+                PieceLocation = DeserializePieceLocation(piece.PieceLocationJson),
                 IsFavorite = false,
                 ScannedArtifactId = null,
                 ScannedAt = null
@@ -170,10 +219,10 @@ namespace EgyptianMuseum.API.Controllers
                 return BadRequest("Piece code is required.");
             }
 
-            if (string.IsNullOrEmpty(piecesRequest.PhotoPath))
+            if (piecesRequest.PhotoPaths == null || !piecesRequest.PhotoPaths.Any())
             {
-                _logger.LogWarning("Piece creation failed: PhotoPath is empty");
-                return BadRequest("PhotoPath is required.");
+                _logger.LogWarning("Piece creation failed: PhotoPaths is empty");
+                return BadRequest("At least one photo path is required.");
             }
 
             if (piecesRequest.Translations == null || !piecesRequest.Translations.Any())
@@ -182,19 +231,25 @@ namespace EgyptianMuseum.API.Controllers
                 return BadRequest("At least one translation is required.");
             }
 
+            // Serialize PieceLocation to JSON
+            var pieceLocationJson = SerializePieceLocation(piecesRequest.PieceLocation);
+
             var piece = new Pieces
             {
                 Code = piecesRequest.Code,
                 Name = piecesRequest.Translations.FirstOrDefault()?.Name,
-                PhotoPath = piecesRequest.PhotoPath,
+                GalleryNum = piecesRequest.GalleryNum,
+                PieceLocationJson = pieceLocationJson,
                 Translations = piecesRequest.Translations.Select(t => new PieceTranslation
                 {
                     LanguageCode = t.LanguageCode,
                     Name = t.Name,
                     TextNarration = t.TextNarration,
                     Period = t.Period,
-                    Category = t.Category
-                }).ToList()
+                    Category = t.Category,
+                    Collection = t.Collection
+                }).ToList(),
+                Images = _service.ConvertPathsToImages(piecesRequest.PhotoPaths)
             };
 
             var createdPiece = await _service.CreateAsync(piece);
@@ -208,10 +263,13 @@ namespace EgyptianMuseum.API.Controllers
                 Id = createdPiece.Id,
                 Code = createdPiece.Code,
                 Name = translation?.Name ?? createdPiece.Name,
-                PhotoPath = createdPiece.PhotoPath,
+                PhotoPaths = createdPiece.Images.Select(img => img.ImagePath).ToList(),
                 TextNarration = translation?.TextNarration,
                 Period = translation?.Period,
-                Category = translation?.Category
+                Category = translation?.Category,
+                GalleryNum = createdPiece.GalleryNum,
+                Collection = translation?.Collection,
+                PieceLocation = DeserializePieceLocation(createdPiece.PieceLocationJson)
             };
 
             return Ok(response);
@@ -241,7 +299,19 @@ namespace EgyptianMuseum.API.Controllers
                 }
             }
 
-            _mapper.Map(piecesRequest, piece);
+            // Update basic properties
+            piece.Code = piecesRequest.Code ?? piece.Code;
+            piece.Name = piecesRequest.Name ?? piece.Name;
+            piece.GalleryNum = piecesRequest.GalleryNum;
+
+            // Update images if provided
+            if (piecesRequest.PhotoPaths != null && piecesRequest.PhotoPaths.Any())
+            {
+                piece.Images = _service.ConvertPathsToImages(piecesRequest.PhotoPaths);
+            }
+
+            // Serialize PieceLocation to JSON
+            piece.PieceLocationJson = SerializePieceLocation(piecesRequest.PieceLocation);
 
             foreach (var item in piecesRequest.Translations)
             {
@@ -252,6 +322,9 @@ namespace EgyptianMuseum.API.Controllers
                 {
                     existing.Name = item.Name;
                     existing.TextNarration = item.TextNarration;
+                    existing.Period = item.Period;
+                    existing.Category = item.Category;
+                    existing.Collection = item.Collection;
                 }
                 else
                 {
@@ -259,7 +332,10 @@ namespace EgyptianMuseum.API.Controllers
                     {
                         LanguageCode = item.LanguageCode,
                         Name = item.Name,
-                        TextNarration = item.TextNarration
+                        TextNarration = item.TextNarration,
+                        Period = item.Period,
+                        Category = item.Category,
+                        Collection = item.Collection
                     });
                 }
             }
@@ -274,7 +350,23 @@ namespace EgyptianMuseum.API.Controllers
 
             _logger.LogInformation("Piece updated with Code: {Code}", piece.Code);
 
-            return Ok(_mapper.Map<PiecesResponse>(piece));
+            var translation = piece.Translations.FirstOrDefault();
+
+            var response = new PiecesResponse
+            {
+                Id = piece.Id,
+                Code = piece.Code,
+                Name = translation?.Name ?? piece.Name,
+                PhotoPaths = piece.Images.Select(img => img.ImagePath).ToList(),
+                TextNarration = translation?.TextNarration,
+                Period = translation?.Period,
+                Category = translation?.Category,
+                GalleryNum = piece.GalleryNum,
+                Collection = translation?.Collection,
+                PieceLocation = DeserializePieceLocation(piece.PieceLocationJson)
+            };
+
+            return Ok(response);
         }
 
         [HttpDelete("{code}")]

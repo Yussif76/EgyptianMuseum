@@ -178,7 +178,9 @@ namespace EgyptianMuseum.Application.Services.ScannedArtifacts
                 ScannedAt = scannedArtifact.ScannedAt,
                 PieceName = translation?.Name ?? scannedArtifact.Piece?.Name,
                 PieceDescription = translation?.TextNarration,
-                PieceImageUrl = scannedArtifact.Piece?.PhotoPath,
+                PhotoPaths = scannedArtifact.Piece?.Images?
+                    .Select(x => x.ImagePath)
+                    .ToList() ?? new List<string>(),
                 PiecePeriod = translation?.Period,
                 PieceCategory = translation?.Category
             };
@@ -197,7 +199,9 @@ namespace EgyptianMuseum.Application.Services.ScannedArtifacts
                 ScannedAt = scannedArtifact.ScannedAt,
                 PieceName = translation?.Name ?? scannedArtifact.Piece?.Name,
                 PieceDescription = translation?.TextNarration,
-                PieceImageUrl = scannedArtifact.Piece?.PhotoPath,
+                PhotoPaths = scannedArtifact.Piece?.Images?
+                    .Select(x => x.ImagePath)
+                    .ToList() ?? new List<string>(),
                 PiecePeriod = translation?.Period,
                 PieceCategory = translation?.Category
             };

@@ -25,6 +25,8 @@ namespace EgyptianMuseum.Infrastructure.Repositories
             return await _context.ScannedArtifacts
                 .Include(s => s.Piece)
                     .ThenInclude(p => p.Translations)
+                .Include(s => s.Piece)
+                    .ThenInclude(p => p.Images)
                 .Where(s => s.UserId == userId)
                 .OrderByDescending(s => s.ScannedAt)
                 .ToListAsync(cancellationToken);
@@ -41,6 +43,8 @@ namespace EgyptianMuseum.Infrastructure.Repositories
             return await _context.ScannedArtifacts
                 .Include(s => s.Piece)
                     .ThenInclude(p => p.Translations)
+                .Include(s => s.Piece)
+                    .ThenInclude(p => p.Images)
                 .FirstOrDefaultAsync(s => s.Id == id, cancellationToken);
         }
 
@@ -68,6 +72,8 @@ namespace EgyptianMuseum.Infrastructure.Repositories
             return await _context.ScannedArtifacts
                 .Include(s => s.Piece)
                     .ThenInclude(p => p.Translations)
+                .Include(s => s.Piece)
+                    .ThenInclude(p => p.Images)
                 .FirstOrDefaultAsync(s => s.UserId == userId && s.PieceId == pieceId, cancellationToken);
         }
 
@@ -76,6 +82,8 @@ namespace EgyptianMuseum.Infrastructure.Repositories
             return await _context.ScannedArtifacts
                 .Include(s => s.Piece)
                     .ThenInclude(p => p.Translations)
+                .Include(s => s.Piece)
+                    .ThenInclude(p => p.Images)
                 .Where(s => s.UserId == userId && s.IsFavorite)
                 .OrderByDescending(s => s.ScannedAt)
                 .ToListAsync(cancellationToken);

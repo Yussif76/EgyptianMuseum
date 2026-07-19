@@ -42,7 +42,16 @@ namespace EgyptianMuseum.Infrastructure.Repositories
             => await _dbContext.Set<T>().ToListAsync();
 
         public async Task<T> GetByIdAsync(int id, CancellationToken cancellationToken = default)
-            => await _dbContext.Set<T>().FirstOrDefaultAsync(e => e.Id == id);
+        {
+            if (typeof(T) == typeof(Pieces))
+            {
+                return (await _dbContext.pieces
+                    .Include(x => x.Translations)
+                    .Include(x => x.Images)
+                    .FirstOrDefaultAsync(e => e.Id == id)) as T;
+            }
+            return await _dbContext.Set<T>().FirstOrDefaultAsync(e => e.Id == id);
+        }
 
 
         public async Task<bool> UpdateAsync(T entity)
@@ -71,6 +80,7 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         {
             return await _dbContext.pieces
                 .Include(x => x.Translations)
+                .Include(x => x.Images)
                 .FirstOrDefaultAsync(x => x.Code == code);
         }
 
@@ -78,6 +88,7 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         {
             return await _dbContext.pieces
                 .Include(x => x.Translations)
+                .Include(x => x.Images)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
