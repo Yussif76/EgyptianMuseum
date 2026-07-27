@@ -3,6 +3,7 @@ using EgyptianMuseum.Application.Interfaces;
 using EgyptianMuseum.Domain.Entities;
 
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -71,6 +72,41 @@ namespace EgyptianMuseum.Application.Services.Auth
                 throw new InvalidOperationException($"User creation failed: {errors}");
             }
 
+            // Optionally, you can send a confirmation email here if needed.
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var encodedToken = WebEncoders.Base64UrlEncode(
+                Encoding.UTF8.GetBytes(token));
+
+            var baseUrl = _configuration["AppSettings:BaseUrl"];
+
+            var confirmationLink =
+                 $"{baseUrl}/api/auth/confirm-email?userId={user.Id}&token={encodedToken}";
+
+            await _emailService.SendEmailAsync(
+                user.Email!,
+                "Verify your MuseWay account",
+                $"""
+                <h2>Welcome to MuseWay!</h2>
+
+                <p>Please click the button below to verify your email.</p>
+
+                <a href="{confirmationLink}"
+                   style="padding:12px 24px;
+                          background:#0d6efd;
+                          color:white;
+                          text-decoration:none;
+                          border-radius:6px;">
+                    Verify Email
+                </a>
+
+                <p>If you didn't create this account, simply ignore this email.</p>
+                """,
+                true);
+
+
+
+
             return user.Id;
         }
 
@@ -80,6 +116,11 @@ namespace EgyptianMuseum.Application.Services.Auth
             if (user == null)
             {
                 throw new InvalidOperationException("Invalid email or password");
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                throw new InvalidOperationException("Please verify your email before logging in.");
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
@@ -415,6 +456,21 @@ namespace EgyptianMuseum.Application.Services.Auth
                 Name = user.Name,
                 RefreshToken = refreshToken.Token
             };
+        }
+
+        public async Task<bool> ConfirmEmailAsync(string userId, string token)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+                return false;
+
+            var decodedToken = Encoding.UTF8.GetString(
+                WebEncoders.Base64UrlDecode(token));
+
+            var result = await _userManager.ConfirmEmailAsync(user, decodedToken);
+
+            return result.Succeeded;
         }
     }
 }

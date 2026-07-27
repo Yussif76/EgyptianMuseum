@@ -124,7 +124,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ChatConversations");
+                    b.ToTable("ChatConversations", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.ChatMessage", b =>
@@ -152,7 +152,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("ConversationId");
 
-                    b.ToTable("ChatMessages");
+                    b.ToTable("ChatMessages", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Feedback", b =>
@@ -188,7 +188,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("UserId", "TargetType", "TargetId");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("Feedbacks", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.IndoorMapPath", b =>
@@ -227,7 +227,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("ToRoomId");
 
-                    b.ToTable("IndoorMapPaths");
+                    b.ToTable("IndoorMapPaths", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Map", b =>
@@ -273,7 +273,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("Zone");
 
-                    b.ToTable("Maps");
+                    b.ToTable("Maps", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.MapTranslation", b =>
@@ -316,7 +316,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.HasIndex("MapId", "LanguageCode")
                         .IsUnique();
 
-                    b.ToTable("MapTranslations");
+                    b.ToTable("MapTranslations", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.PasswordResetOtp", b =>
@@ -349,7 +349,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("UserId", "Code", "IsUsed");
 
-                    b.ToTable("PasswordResetOtps");
+                    b.ToTable("PasswordResetOtps", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.PieceImage", b =>
@@ -429,7 +429,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.HasIndex("PieceId", "LanguageCode")
                         .IsUnique();
 
-                    b.ToTable("PieceTranslations");
+                    b.ToTable("PieceTranslations", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Pieces", b =>
@@ -505,7 +505,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("RefreshTokens");
+                    b.ToTable("RefreshTokens", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Room", b =>
@@ -550,7 +550,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("MapId");
 
-                    b.ToTable("Rooms");
+                    b.ToTable("Rooms", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.RoomTranslation", b =>
@@ -593,7 +593,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.HasIndex("RoomId", "LanguageCode")
                         .IsUnique();
 
-                    b.ToTable("RoomTranslations");
+                    b.ToTable("RoomTranslations", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.ScannedArtifact", b =>
@@ -630,7 +630,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("UK_ScannedArtifacts_UserId_PieceId");
 
-                    b.ToTable("ScannedArtifacts");
+                    b.ToTable("ScannedArtifacts", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.Tour", b =>
@@ -700,7 +700,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("Category");
 
-                    b.ToTable("Tours");
+                    b.ToTable("Tours", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.TourPiece", b =>
@@ -718,7 +718,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.HasIndex("TourId", "PieceId")
                         .IsUnique();
 
-                    b.ToTable("TourPieces");
+                    b.ToTable("TourPieces", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.TourRoom", b =>
@@ -738,7 +738,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
 
                     b.HasIndex("TourId", "Order");
 
-                    b.ToTable("TourRooms");
+                    b.ToTable("TourRooms", (string)null);
                 });
 
             modelBuilder.Entity("EgyptianMuseum.Domain.Entities.TourTranslation", b =>
@@ -786,7 +786,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
                     b.HasIndex("TourId", "LanguageCode")
                         .IsUnique();
 
-                    b.ToTable("TourTranslations");
+                    b.ToTable("TourTranslations", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

@@ -13,7 +13,7 @@ namespace EgyptianMuseum.Infrastructure.Migrations
         {
             migrationBuilder.AddColumn<string>(
                 name: "ZoneName",
-                table: "MapTranslations",
+                table: "MapTranslation",
                 type: "nvarchar(100)",
                 maxLength: 100,
                 nullable: false,
