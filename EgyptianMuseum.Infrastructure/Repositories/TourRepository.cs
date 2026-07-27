@@ -24,7 +24,8 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         {
             return await _context.Tours
                 .Include(t => t.Translations)
-                .Include(t => t.TourPieces)
+                .Include(t => t.TourPieces
+                    .OrderBy(tp => tp.Order))
                     .ThenInclude(tp => tp.Piece)
                         .ThenInclude(p => p.Translations)
                 .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted, cancellationToken);
@@ -42,7 +43,8 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         {
             return await _context.Tours
                 .Include(t => t.Translations)
-                .Include(t => t.TourPieces)
+                .Include(t => t.TourPieces
+                    .OrderBy(tp => tp.Order))
                     .ThenInclude(tp => tp.Piece)
                         .ThenInclude(p => p.Translations)
                 .Where(t => !t.IsDeleted)
@@ -135,6 +137,7 @@ namespace EgyptianMuseum.Infrastructure.Repositories
                 .Include(tp => tp.Piece)
                     .ThenInclude(p => p.Translations)
                 .Where(tp => tp.TourId == tourId)
+                .OrderBy(tp => tp.Order)
                 .ToListAsync(cancellationToken);
         }
 
@@ -142,7 +145,8 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         {
             return await _context.Tours
                 .Include(t => t.Translations)
-                .Include(t => t.TourPieces)
+                .Include(t => t.TourPieces
+                    .OrderBy(tp => tp.Order))
                     .ThenInclude(tp => tp.Piece)
                         .ThenInclude(p => p.Translations)
                 .Where(t => !t.IsDeleted && t.IsRecommended)

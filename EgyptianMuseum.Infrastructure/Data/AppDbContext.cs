@@ -335,6 +335,7 @@ namespace EgyptianMuseum.Infrastructure.Data
 
                 entity.Property(e => e.TourId).IsRequired();
                 entity.Property(e => e.PieceId).IsRequired();
+                entity.Property(e => e.Order).IsRequired();
 
                 entity.HasOne(e => e.Tour)
                     .WithMany(t => t.TourPieces)
@@ -348,6 +349,8 @@ namespace EgyptianMuseum.Infrastructure.Data
 
                 entity.HasIndex(e => new { e.TourId, e.PieceId })
                     .IsUnique();
+
+                entity.HasIndex(e => new { e.TourId, e.Order });
             });
 
             // TourRoom configuration

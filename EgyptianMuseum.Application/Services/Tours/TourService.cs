@@ -91,10 +91,13 @@ namespace EgyptianMuseum.Application.Services.Tours
             // Add pieces
             if (pieces.Any())
             {
-                tour.TourPieces = pieces.Select(p => new TourPiece
-                {
-                    PieceId = p.Id
-                }).ToList();
+                tour.TourPieces = pieces
+                    .Select((p, index) => new TourPiece
+                    {
+                        PieceId = p.Id,
+                        Order = index + 1
+                    })
+                    .ToList();
             }
 
             var createdTour = await _tourRepository.CreateAsync(tour, cancellationToken);
@@ -147,11 +150,14 @@ namespace EgyptianMuseum.Application.Services.Tours
             existingTour.TourPieces.Clear();
             if (pieces.Any())
             {
-                existingTour.TourPieces = pieces.Select(p => new TourPiece
-                {
-                    TourId = id,
-                    PieceId = p.Id
-                }).ToList();
+                existingTour.TourPieces = pieces
+                    .Select((p, index) => new TourPiece
+                    {
+                        TourId = id,
+                        PieceId = p.Id,
+                        Order = index + 1
+                    })
+                    .ToList();
             }
 
             await _tourRepository.UpdateAsync(existingTour, cancellationToken);
@@ -368,8 +374,9 @@ namespace EgyptianMuseum.Application.Services.Tours
             // Parse marks from JSON
             var marks = DeserializeMarks(tour.MarksJson);
 
-            // Map pieces with their translations
+            // Map pieces with their translations, ordered by Order to preserve sequence
             var pieces = tour.TourPieces
+                .OrderBy(tp => tp.Order)
                 .Select(tp => MapPieceToDtoWithTranslation(tp.Piece, lang))
                 .ToList();
 
