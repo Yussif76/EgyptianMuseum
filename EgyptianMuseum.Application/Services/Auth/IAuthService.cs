@@ -12,6 +12,7 @@ namespace EgyptianMuseum.Application.Services.Auth
         Task<AuthResponseDto> RefreshTokenAsync(  RefreshTokenRequestDto dto);
         Task LogoutAsync(string refreshToken);
         Task<AuthResponseDto> GoogleLoginAsync(GoogleLoginRequestDto dto);
+        Task<bool> ConfirmEmailAsync(string userId, string token);
 
         /// <summary>
         /// Updates the display name (Name field) for the specified user.

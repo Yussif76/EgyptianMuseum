@@ -175,6 +175,17 @@ namespace EgyptianMuseum.API.Controllers
             }
         }
 
+        [HttpGet("confirm-email")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            var result = await _authService.ConfirmEmailAsync(userId, token);
+
+            if (!result)
+                return BadRequest("Invalid confirmation link.");
+
+            return Ok("Email confirmed successfully.");
+        }
+
         /// <summary>
         /// Updates the display name of the authenticated user.
         /// </summary>
