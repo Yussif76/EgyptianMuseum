@@ -78,11 +78,11 @@ namespace EgyptianMuseum.Application.Services.Auth
             var encodedToken = WebEncoders.Base64UrlEncode(
                 Encoding.UTF8.GetBytes(token));
 
-            var deepLink = _configuration["AppSettings:DeepLink"];
+            var baseUrl = _configuration["AppSettings:BaseUrl"];
 
             var confirmationLink =
-                $"{deepLink}?userId={user.Id}&token={encodedToken}";
-           
+                $"{baseUrl}/api/auth/confirm-email?userId={user.Id}&token={encodedToken}";
+
 
             await _emailService.SendEmailAsync(
                 user.Email!,
