@@ -185,6 +185,20 @@ namespace EgyptianMuseum.API.Controllers
 
             return Ok("Email confirmed successfully.");
         }
+        
+        
+        
+        [HttpPost("resend-confirmation-email")]
+        public async Task<IActionResult> ResendConfirmationEmail(
+            ResendConfirmationEmailRequestDto dto)
+        {
+            await _authService.ResendConfirmationEmailAsync(dto.Email);
+
+            return Ok(new
+            {
+                message = "Verification email has been sent."
+            });
+        }
 
         /// <summary>
         /// Updates the display name of the authenticated user.
