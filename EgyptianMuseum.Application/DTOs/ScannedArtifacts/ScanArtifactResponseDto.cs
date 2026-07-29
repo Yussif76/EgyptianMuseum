@@ -9,7 +9,7 @@ namespace EgyptianMuseum.Application.DTOs.ScannedArtifacts
         public DateTime ScannedAt { get; set; }
         public string? PieceName { get; set; }
         public string? PieceDescription { get; set; }
-        public string? PieceImageUrl { get; set; }
+        public List<string> PhotoPaths { get; set; } = new();
         public string? PiecePeriod { get; set; }
         public string? PieceCategory { get; set; }
     }

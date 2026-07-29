@@ -13,6 +13,7 @@ namespace EgyptianMuseum.Application.DTOs.Pieces
         public string TextNarration { get; set; }
         public string? Period { get; set; }
         public string? Category { get; set; }
+        public string? Collection { get; set; }
 
     }
 }

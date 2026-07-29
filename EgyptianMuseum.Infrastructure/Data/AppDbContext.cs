@@ -17,6 +17,7 @@ namespace EgyptianMuseum.Infrastructure.Data
         public DbSet<Feedback> Feedbacks { get; set; } = null!;
         public DbSet<Pieces> pieces { get; set; }
         public DbSet<PieceTranslation> PieceTranslations { get; set; }
+        public DbSet<PieceImage> PieceImages { get; set; }
         public DbSet<PasswordResetOtp> PasswordResetOtps { get; set; } = null!;
         public DbSet<Map> Maps { get; set; } = null!;
         public DbSet<MapTranslation> MapTranslations { get; set; }
@@ -72,6 +73,15 @@ namespace EgyptianMuseum.Infrastructure.Data
             modelBuilder.Entity<PieceTranslation>()
                 .HasIndex(x => new { x.PieceId, x.LanguageCode })
                 .IsUnique();
+
+            // PieceImage configuration
+            modelBuilder.Entity<PieceImage>()
+                .HasOne(x => x.Piece)
+                .WithMany(x => x.Images)
+                .HasForeignKey(x => x.PieceId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_PieceImages_Artifactpieces_PieceId");
+
             modelBuilder.Entity<Pieces>().HasQueryFilter(p => !p.IsDeleted);
             modelBuilder.Entity<Pieces>()
             .HasIndex(p => p.Code)
@@ -276,7 +286,6 @@ namespace EgyptianMuseum.Infrastructure.Data
                 entity.Property(e => e.Color).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.ImageUrl).IsRequired();
                 entity.Property(e => e.PathImageUrl).IsRequired();
-                entity.Property(e => e.MarksJson).IsRequired().HasDefaultValue("[]");
                 entity.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
 
                 entity.HasMany(e => e.Translations)
@@ -325,6 +334,7 @@ namespace EgyptianMuseum.Infrastructure.Data
 
                 entity.Property(e => e.TourId).IsRequired();
                 entity.Property(e => e.PieceId).IsRequired();
+                entity.Property(e => e.Order).IsRequired();
 
                 entity.HasOne(e => e.Tour)
                     .WithMany(t => t.TourPieces)
@@ -338,6 +348,8 @@ namespace EgyptianMuseum.Infrastructure.Data
 
                 entity.HasIndex(e => new { e.TourId, e.PieceId })
                     .IsUnique();
+
+                entity.HasIndex(e => new { e.TourId, e.Order });
             });
 
             // TourRoom configuration

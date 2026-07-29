@@ -22,5 +22,6 @@ namespace EgyptianMuseum.Application.Interfaces
         Task<List<Pieces>> GetPagedWithTranslationsAsync(int page, int pageSize);
         //Task<Pieces?> GetByIdWithScannedStatusAsync(int id, string userId, CancellationToken cancellationToken = default);
         Task<Pieces?> GetByCodeWithScannedStatusAsync(string code, string userId, CancellationToken cancellationToken = default);
+        List<PieceImage> ConvertPathsToImages(List<string>? photoPaths, List<PieceImage>? existingImages = null);
     }
 }

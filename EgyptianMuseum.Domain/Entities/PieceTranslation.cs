@@ -15,5 +15,6 @@ namespace EgyptianMuseum.Domain.Entities
         public string Name { get; set; }
         public string? Period { get; set; }
         public string? Category { get; set; }
+        public string? Collection { get; set; }
     }
 }

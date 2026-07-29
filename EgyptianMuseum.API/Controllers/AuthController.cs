@@ -27,7 +27,13 @@ namespace EgyptianMuseum.API.Controllers
             try
             {
                 var userId = await _authService.RegisterAsync(dto);
-                return Ok(new { success = true, message = "User registered successfully", userId });
+                return Ok(new
+                {
+                    success = true,
+                    message = "Account created! Check your email to verify your account.",
+                    //requiresEmailConfirmation = true,
+                    userId = userId
+                });
             }
             catch (InvalidOperationException ex)
             {

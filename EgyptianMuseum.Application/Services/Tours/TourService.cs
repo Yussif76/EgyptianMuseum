@@ -1,3 +1,4 @@
+using EgyptianMuseum.Application.DTOs.Pieces;
 using EgyptianMuseum.Application.DTOs.Tours;
 using EgyptianMuseum.Application.Interfaces;
 using EgyptianMuseum.Domain.Entities;
@@ -59,9 +60,6 @@ namespace EgyptianMuseum.Application.Services.Tours
             // Validate and load pieces
             var pieces = await ValidateAndLoadPiecesAsync(request.PieceCodes, cancellationToken);
 
-            // Parse marks
-            var marksJson = SerializeMarks(request.Marks);
-
             var tour = new Tour
             {
                 Name = request.Name.Trim(),
@@ -72,7 +70,6 @@ namespace EgyptianMuseum.Application.Services.Tours
                 ImageUrl = request.ImageUrl.Trim(),
                 IconPath = request.IconPath.Trim(),
                 PathImageUrl = request.PathImageUrl.Trim(),
-                MarksJson = marksJson,
                 IsRecommended = request.IsRecommended
             };
 
@@ -91,10 +88,13 @@ namespace EgyptianMuseum.Application.Services.Tours
             // Add pieces
             if (pieces.Any())
             {
-                tour.TourPieces = pieces.Select(p => new TourPiece
-                {
-                    PieceId = p.Id
-                }).ToList();
+                tour.TourPieces = pieces
+                    .Select((p, index) => new TourPiece
+                    {
+                        PieceId = p.Id,
+                        Order = index + 1
+                    })
+                    .ToList();
             }
 
             var createdTour = await _tourRepository.CreateAsync(tour, cancellationToken);
@@ -115,9 +115,6 @@ namespace EgyptianMuseum.Application.Services.Tours
             // Validate and load pieces
             var pieces = await ValidateAndLoadPiecesAsync(request.PieceCodes, cancellationToken);
 
-            // Parse marks
-            var marksJson = SerializeMarks(request.Marks);
-
             existingTour.Name = request.Name.Trim();
             existingTour.Description = request.Description.Trim();
             existingTour.Category = request.Category.Trim();
@@ -126,7 +123,6 @@ namespace EgyptianMuseum.Application.Services.Tours
             existingTour.ImageUrl = request.ImageUrl.Trim();
             existingTour.IconPath = request.IconPath.Trim();
             existingTour.PathImageUrl = request.PathImageUrl.Trim();
-            existingTour.MarksJson = marksJson;
             existingTour.IsRecommended = request.IsRecommended;
 
             // Update translations
@@ -147,11 +143,14 @@ namespace EgyptianMuseum.Application.Services.Tours
             existingTour.TourPieces.Clear();
             if (pieces.Any())
             {
-                existingTour.TourPieces = pieces.Select(p => new TourPiece
-                {
-                    TourId = id,
-                    PieceId = p.Id
-                }).ToList();
+                existingTour.TourPieces = pieces
+                    .Select((p, index) => new TourPiece
+                    {
+                        TourId = id,
+                        PieceId = p.Id,
+                        Order = index + 1
+                    })
+                    .ToList();
             }
 
             await _tourRepository.UpdateAsync(existingTour, cancellationToken);
@@ -365,11 +364,9 @@ namespace EgyptianMuseum.Application.Services.Tours
                 .FirstOrDefault(x => x.LanguageCode == lang)
                 ?? tour.Translations.FirstOrDefault();
 
-            // Parse marks from JSON
-            var marks = DeserializeMarks(tour.MarksJson);
-
-            // Map pieces with their translations
+            // Map pieces with their translations, ordered by Order to preserve sequence
             var pieces = tour.TourPieces
+                .OrderBy(tp => tp.Order)
                 .Select(tp => MapPieceToDtoWithTranslation(tp.Piece, lang))
                 .ToList();
 
@@ -385,7 +382,6 @@ namespace EgyptianMuseum.Application.Services.Tours
                 IconPath = tour.IconPath,
                 PathImageUrl = tour.PathImageUrl,
                 IsRecommended = tour.IsRecommended,
-                Marks = marks,
                 Pieces = pieces
             };
         }
@@ -399,11 +395,15 @@ namespace EgyptianMuseum.Application.Services.Tours
             var translation = piece.Translations
                 .FirstOrDefault(x => x.LanguageCode == lang);
 
+            // Deserialize piece location
+            var pieceLocation = DeserializePieceLocation(piece.PieceLocationJson);
+
             return new TourPieceResponseDto
             {
                 Id = piece.Id,
                 Code = piece.Code,
-                PhotoPath = piece.PhotoPath,
+                PhotoPaths = piece.Images.Select(img => img.ImagePath).ToList(),
+                PieceLocation = pieceLocation,
                 Name = translation?.Name ?? piece.Name ?? string.Empty,
                 TextNarration = translation?.TextNarration ?? string.Empty,
                 Period = translation?.Period ?? string.Empty,
@@ -445,43 +445,6 @@ namespace EgyptianMuseum.Application.Services.Tours
         }
 
         /// <summary>
-        /// Serializes TourMarkDto list to JSON string for storage in MarksJson.
-        /// </summary>
-        private string SerializeMarks(List<TourMarkDto> marks)
-        {
-            if (marks == null || !marks.Any())
-                return "[]";
-
-            try
-            {
-                return JsonSerializer.Serialize(marks);
-            }
-            catch (Exception ex)
-            {
-                throw new ArgumentException("Failed to serialize marks", ex);
-            }
-        }
-
-        /// <summary>
-        /// Deserializes MarksJson string back to TourMarkDto list.
-        /// </summary>
-        private List<TourMarkDto> DeserializeMarks(string marksJson)
-        {
-            if (string.IsNullOrWhiteSpace(marksJson) || marksJson == "[]")
-                return new List<TourMarkDto>();
-
-            try
-            {
-                var marks = JsonSerializer.Deserialize<List<TourMarkDto>>(marksJson);
-                return marks ?? new List<TourMarkDto>();
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Failed to deserialize marks from storage", ex);
-            }
-        }
-
-        /// <summary>
         /// Validates create/update request data.
         /// </summary>
         private void ValidateCreateUpdateRequest(dynamic request)
@@ -509,6 +472,38 @@ namespace EgyptianMuseum.Application.Services.Tours
 
             if (string.IsNullOrWhiteSpace(request.PathImageUrl))
                 throw new ArgumentException("Tour path image URL is required");
+        }
+
+        /// <summary>
+        /// Deserializes PieceLocationJson string back to PieceLocationDto.
+        /// Supports both single object format: {"X": 0.3175, "Y": 0.8544}
+        /// and array format: [{"X": 0.3175, "Y": 0.8544}]
+        /// Returns null if the JSON is null, empty, or represents an empty array.
+        /// </summary>
+        private PieceLocationDto? DeserializePieceLocation(string? pieceLocationJson)
+        {
+            if (string.IsNullOrWhiteSpace(pieceLocationJson) || pieceLocationJson == "[]")
+                return null;
+
+            try
+            {
+                var trimmedJson = pieceLocationJson.Trim();
+
+                // Check if JSON is an array format
+                if (trimmedJson.StartsWith('['))
+                {
+                    var locations = JsonSerializer.Deserialize<List<PieceLocationDto>>(trimmedJson);
+                    return locations?.FirstOrDefault();
+                }
+
+                // Otherwise, deserialize as single object
+                var location = JsonSerializer.Deserialize<PieceLocationDto>(trimmedJson);
+                return location;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Failed to deserialize piece location from storage", ex);
+            }
         }
     }
 }

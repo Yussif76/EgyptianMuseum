@@ -1,5 +1,7 @@
 namespace EgyptianMuseum.Application.DTOs.Tours
 {
+    using EgyptianMuseum.Application.DTOs.Pieces;
+
     public class TourResponseDto
     {
         public int Id { get; set; }
@@ -18,7 +20,6 @@ namespace EgyptianMuseum.Application.DTOs.Tours
         public string IconPath { get; set; } = null!;
         public string PathImageUrl { get; set; } = null!;
         public bool IsRecommended { get; set; }
-        public List<TourMarkDto> Marks { get; set; } = new();
 
         public List<TourPieceResponseDto> Pieces { get; set; } = new();
     }
@@ -29,7 +30,9 @@ namespace EgyptianMuseum.Application.DTOs.Tours
 
         public string Code { get; set; } = null!;
 
-        public string PhotoPath { get; set; } = null!;
+        public List<string> PhotoPaths { get; set; } = new();
+
+        public PieceLocationDto? PieceLocation { get; set; }
 
         public string Name { get; set; } = null!;
 

@@ -1,6 +1,6 @@
-namespace EgyptianMuseum.Application.DTOs.Tours
+namespace EgyptianMuseum.Application.DTOs.Pieces
 {
-    public class TourMarkDto
+    public class PieceLocationDto
     {
         public double X { get; set; }
 

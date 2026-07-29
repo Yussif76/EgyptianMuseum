@@ -10,7 +10,9 @@ namespace EgyptianMuseum.Application.DTOs.Pieces
     {
         public string Code { get; set; }
         public string Name { get; set; }
-        public string PhotoPath { get; set; }
+        public List<string> PhotoPaths { get; set; } = new();
+        public int? GalleryNum { get; set; }
+        public List<PieceLocationDto>? PieceLocation { get; set; }
         public List<PieceTranslationRequest> Translations { get; set; } = new();
 
     }

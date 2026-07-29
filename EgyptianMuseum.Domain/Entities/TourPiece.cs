@@ -9,5 +9,7 @@ namespace EgyptianMuseum.Domain.Entities
         public int PieceId { get; set; }
 
         public Pieces Piece { get; set; } = null!;
+
+        public int Order { get; set; }
     }
 }
