@@ -473,5 +473,49 @@ namespace EgyptianMuseum.Application.Services.Auth
 
             return result.Succeeded;
         }
+
+        // This method is intended to resend the confirmation email to the user.
+
+        public async Task ResendConfirmationEmailAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                throw new InvalidOperationException("User not found.");
+
+            if (await _userManager.IsEmailConfirmedAsync(user))
+                throw new InvalidOperationException("Email is already confirmed.");
+
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+            var encodedToken = WebEncoders.Base64UrlEncode(
+                Encoding.UTF8.GetBytes(token));
+
+            var baseUrl = _configuration["AppSettings:BaseUrl"];
+
+            var confirmationLink =
+                $"{baseUrl}/api/auth/confirm-email?userId={user.Id}&token={encodedToken}";
+
+            await _emailService.SendEmailAsync(
+                user.Email!,
+                "Verify your MuseWay account",
+                $"""
+        <h2>Welcome to MuseWay!</h2>
+
+        <p>Please click the button below to verify your email.</p>
+
+        <a href="{confirmationLink}"
+           style="padding:12px 24px;
+                  background:#0d6efd;
+                  color:white;
+                  text-decoration:none;
+                  border-radius:6px;">
+            Verify Email
+        </a>
+
+        <p>If you didn't create this account, simply ignore this email.</p>
+        """,
+                true);
+        }
     }
 }
