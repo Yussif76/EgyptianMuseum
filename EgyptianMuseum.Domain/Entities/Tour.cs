@@ -18,9 +18,6 @@ namespace EgyptianMuseum.Domain.Entities
         public bool IsRecommended { get; set; } = false;
         public string IconPath { get; set; } = null!;
 
-        // serialized JSON
-        public string MarksJson { get; set; } = "[]";
-
         public ICollection<TourTranslation> Translations { get; set; }
             = new List<TourTranslation>();
 

@@ -286,7 +286,6 @@ namespace EgyptianMuseum.Infrastructure.Data
                 entity.Property(e => e.Color).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.ImageUrl).IsRequired();
                 entity.Property(e => e.PathImageUrl).IsRequired();
-                entity.Property(e => e.MarksJson).IsRequired().HasDefaultValue("[]");
                 entity.Property(e => e.IsDeleted).IsRequired().HasDefaultValue(false);
 
                 entity.HasMany(e => e.Translations)

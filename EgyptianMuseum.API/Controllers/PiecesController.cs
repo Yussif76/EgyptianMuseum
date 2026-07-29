@@ -52,7 +52,9 @@ namespace EgyptianMuseum.API.Controllers
 
         /// <summary>
         /// Deserializes PieceLocationJson string back to PieceLocationDto list.
-        /// Returns null if the JSON is null or empty.
+        /// Supports both single object format: {"X": 0.3175, "Y": 0.8544}
+        /// and array format: [{"X": 0.3175, "Y": 0.8544}]
+        /// Returns null if the JSON is null, empty, or represents an empty array.
         /// </summary>
         private List<PieceLocationDto>? DeserializePieceLocation(string? pieceLocationJson)
         {
@@ -61,8 +63,18 @@ namespace EgyptianMuseum.API.Controllers
 
             try
             {
-                var locations = JsonSerializer.Deserialize<List<PieceLocationDto>>(pieceLocationJson);
-                return locations ?? null;
+                var trimmedJson = pieceLocationJson.Trim();
+
+                // Check if JSON is an array format
+                if (trimmedJson.StartsWith('['))
+                {
+                    var locations = JsonSerializer.Deserialize<List<PieceLocationDto>>(trimmedJson);
+                    return locations ?? null;
+                }
+
+                // Otherwise, deserialize as single object and wrap in a list
+                var location = JsonSerializer.Deserialize<PieceLocationDto>(trimmedJson);
+                return location != null ? new List<PieceLocationDto> { location } : null;
             }
             catch (Exception ex)
             {

@@ -82,7 +82,7 @@ namespace EgyptianMuseum.Application.Services.Auth
 
             var confirmationLink =
                 $"{deepLink}?userId={user.Id}&token={encodedToken}";
-            throw new Exception(confirmationLink);
+            //throw new Exception(confirmationLink);
 
             await _emailService.SendEmailAsync(
                 user.Email!,

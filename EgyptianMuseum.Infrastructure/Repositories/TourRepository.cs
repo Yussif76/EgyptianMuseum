@@ -77,7 +77,6 @@ namespace EgyptianMuseum.Infrastructure.Repositories
             existingTour.ImageUrl = tour.ImageUrl;
             existingTour.IconPath = tour.IconPath;
             existingTour.PathImageUrl = tour.PathImageUrl;
-            existingTour.MarksJson = tour.MarksJson;
             existingTour.IsRecommended = tour.IsRecommended;
 
             // Update translations

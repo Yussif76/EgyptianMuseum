@@ -18,8 +18,6 @@ namespace EgyptianMuseum.Application.DTOs.Tours
         public bool IsRecommended { get; set; }
         public List<string> PieceCodes { get; set; } = new();
 
-        public List<TourMarkDto> Marks { get; set; } = new();
-
         public List<TourTranslationDto> Translations { get; set; } = new();
     }
 }

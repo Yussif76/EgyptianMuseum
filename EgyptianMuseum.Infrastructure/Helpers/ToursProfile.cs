@@ -11,7 +11,6 @@ namespace EgyptianMuseum.Infrastructure.Helpers
             CreateMap<CreateTourRequestDto, Tour>();
             CreateMap<UpdateTourRequestDto, Tour>();
             CreateMap<TourTranslationDto, TourTranslation>();
-            CreateMap<TourMarkDto, TourMarkDto>();
             CreateMap<Tour, TourResponseDto>();
         }
     }
