@@ -147,8 +147,8 @@ namespace EgyptianMuseum.API
     Explore History • Discover Treasures • Inspire Journeys",
                     Contact = new OpenApiContact
                     {
-                        Name = "museway.official.app@gmail.com",
-                        Email = "museway.official.app@gmail.com",
+                        Name = "MuseWay.official.app@gmail.com",
+                        Email = "MuseWay.official.app@gmail.com",
                     }
                 });
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme

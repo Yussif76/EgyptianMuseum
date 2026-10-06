@@ -28,6 +28,9 @@ namespace EgyptianMuseum.Infrastructure.Repositories
                     .OrderBy(tp => tp.Order))
                     .ThenInclude(tp => tp.Piece)
                         .ThenInclude(p => p.Translations)
+                .Include(t => t.TourPieces)
+                    .ThenInclude(tp => tp.Piece)
+                        .ThenInclude(p => p.Images)
                 .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted, cancellationToken);
         }
 
@@ -43,10 +46,15 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         {
             return await _context.Tours
                 .Include(t => t.Translations)
-                .Include(t => t.TourPieces
-                    .OrderBy(tp => tp.Order))
+
+                .Include(t => t.TourPieces.OrderBy(tp => tp.Order))
                     .ThenInclude(tp => tp.Piece)
                         .ThenInclude(p => p.Translations)
+
+                .Include(t => t.TourPieces)
+                    .ThenInclude(tp => tp.Piece)
+                        .ThenInclude(p => p.Images)
+
                 .Where(t => !t.IsDeleted)
                 .OrderBy(t => t.Name)
                 .ToListAsync(cancellationToken);
@@ -122,9 +130,15 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         public async Task<List<Tour>> GetAllWithRoomsAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Tours
-                .Include(t => t.TourRooms)
-                    .ThenInclude(tr => tr.Room)
-                .Include(t => t.Translations)
+.Include(t => t.Translations)
+
+                .Include(t => t.TourPieces.OrderBy(tp => tp.Order))
+                    .ThenInclude(tp => tp.Piece)
+                        .ThenInclude(p => p.Translations)
+
+                .Include(t => t.TourPieces)
+                    .ThenInclude(tp => tp.Piece)
+                        .ThenInclude(p => p.Images)
                 .Where(t => !t.IsDeleted)
                 .OrderBy(t => t.Name)
                 .ToListAsync(cancellationToken);
@@ -133,21 +147,29 @@ namespace EgyptianMuseum.Infrastructure.Repositories
         public async Task<List<TourPiece>> GetTourPiecesAsync(int tourId, CancellationToken cancellationToken = default)
         {
             return await _context.TourPieces
-                .Include(tp => tp.Piece)
-                    .ThenInclude(p => p.Translations)
-                .Where(tp => tp.TourId == tourId)
-                .OrderBy(tp => tp.Order)
-                .ToListAsync(cancellationToken);
+    .Include(tp => tp.Piece)
+        .ThenInclude(p => p.Translations)
+
+    .Include(tp => tp.Piece)
+        .ThenInclude(p => p.Images)
+
+    .Where(tp => tp.TourId == tourId)
+    .OrderBy(tp => tp.Order)
+    .ToListAsync(cancellationToken);
         }
 
         public async Task<List<Tour>> GetRecommendedAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Tours
                 .Include(t => t.Translations)
-                .Include(t => t.TourPieces
-                    .OrderBy(tp => tp.Order))
-                    .ThenInclude(tp => tp.Piece)
-                        .ThenInclude(p => p.Translations)
+
+.Include(t => t.TourPieces.OrderBy(tp => tp.Order))
+    .ThenInclude(tp => tp.Piece)
+        .ThenInclude(p => p.Translations)
+
+.Include(t => t.TourPieces)
+    .ThenInclude(tp => tp.Piece)
+        .ThenInclude(p => p.Images)
                 .Where(t => !t.IsDeleted && t.IsRecommended)
                 .OrderBy(t => t.Name)
                 .ToListAsync(cancellationToken);
